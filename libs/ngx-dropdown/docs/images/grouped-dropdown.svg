@@ -1,0 +1,32 @@
+<svg width="600" height="280" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="280" fill="#f8f9fa"/>
+  <text x="30" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#212529">Grouped Options</text>
+  
+  <g transform="translate(30, 60)">
+    <rect x="0" y="0" width="350" height="38" rx="4" fill="white" stroke="#ced4da" stroke-width="1"/>
+    <text x="12" y="24" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">Select a city</text>
+    <text x="330" y="24" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">▼</text>
+    
+    <rect x="0" y="42" width="350" height="190" rx="4" fill="white" stroke="#ced4da" stroke-width="1" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.1))"/>
+    
+    <!-- Group USA -->
+    <rect x="0" y="42" width="350" height="26" fill="#f8f9fa"/>
+    <text x="12" y="59" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#495057">USA</text>
+    <line x1="0" y1="68" x2="350" y2="68" stroke="#dee2e6"/>
+    
+    <text x="12" y="87" font-family="Arial, sans-serif" font-size="14" fill="#212529">New York</text>
+    <text x="12" y="111" font-family="Arial, sans-serif" font-size="14" fill="#212529">Los Angeles</text>
+    <text x="12" y="135" font-family="Arial, sans-serif" font-size="14" fill="#212529">Chicago</text>
+    <line x1="0" y1="96" x2="350" y2="96" stroke="#f1f1f1"/>
+    <line x1="0" y1="120" x2="350" y2="120" stroke="#f1f1f1"/>
+    
+    <!-- Group UK -->
+    <rect x="0" y="144" width="350" height="26" fill="#f8f9fa"/>
+    <text x="12" y="161" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#495057">UK</text>
+    <line x1="0" y1="170" x2="350" y2="170" stroke="#dee2e6"/>
+    
+    <text x="12" y="189" font-family="Arial, sans-serif" font-size="14" fill="#212529">London</text>
+    <text x="12" y="213" font-family="Arial, sans-serif" font-size="14" fill="#212529">Manchester</text>
+    <line x1="0" y1="198" x2="350" y2="198" stroke="#f1f1f1"/>
+  </g>
+</svg>
