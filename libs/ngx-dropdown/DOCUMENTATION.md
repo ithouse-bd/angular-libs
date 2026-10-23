@@ -103,7 +103,7 @@ export class AppComponent {
 }
 ```
 
-> **Design Preview:** ![Basic Dropdown](./docs/images/basic-dropdown.png)
+> **Design Preview:** ![Basic Dropdown](./docs/images/basic-dropdown.svg)
 > *Basic single select dropdown in light theme*
 
 ## Theming
@@ -132,7 +132,7 @@ Or use the `dark` class:
 | `dark` | `data-theme="dark"` or `.dark` class | Modern dark theme for low-light environments |
 | `auto`/`system` | `data-theme="auto"` or no attribute | Follows system preference via `prefers-color-scheme` |
 
-> **Design Preview:** ![Theme Comparison](./docs/images/theme-comparison.png)
+> **Design Preview:** ![Theme Comparison](./docs/images/theme-comparison.svg)
 > *Light theme (left) vs Dark theme (right)*
 
 ### Theme Toggle Example
@@ -173,7 +173,6 @@ export class ThemeService {
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `options` | `DropdownOption[]` | `[]` | Array of options to display in dropdown |
-| `config` | `DropdownConfig` | `{}` | Configuration object (alternative to individual inputs) |
 | `placeholder` | `string` | `'Select...'` | Placeholder text when no selection |
 | `multiple` | `boolean` | `false` | Enable multi-selection mode |
 | `searchable` | `boolean` | `true` | Enable search/filter functionality |
@@ -184,6 +183,12 @@ export class ThemeService {
 | `showSelectAll` | `boolean` | `true` | Show "Select All" button in multi-select mode |
 | `clearable` | `boolean` | `true` | Show clear button to reset selection |
 | `closeOnSelect` | `boolean` | `true` | Auto-close dropdown after selection (single select only) |
+| `bindLabel` | `string` | `undefined` | Property to display (defaults to 'label', falls back to 'name','text','title') |
+| `bindValue` | `string` | `undefined` | Property for form value (if not set, uses 'value' or entire object) |
+| `serverSide` | `boolean` | `false` | Enable server-side pagination/search for API calls |
+| `totalItems` | `number` | `0` | Total items count for server-side pagination |
+| `loading` | `boolean` | `false` | Show loading state |
+| `loadingText` | `string` | `'Loading...'` | Text shown during loading |
 
 ### Outputs
 
@@ -228,7 +233,84 @@ interface DropdownChangeEvent {
 
 ## Usage Examples
 
-### 1. Multi-select with Search
+### 1. Basic Usage with bindLabel/bindValue
+
+> **Design Preview:** ![Basic Dropdown](./docs/images/basic-dropdown.svg)
+> *Basic single select dropdown in light theme*
+
+#### bindLabel & bindValue Behavior
+
+The dropdown supports flexible binding:
+
+- **If `bindValue` specified** → Form control gets `option[bindValue]`
+- **If `bindValue` not specified but `option.value` exists** → Form control gets `option.value`
+- **If neither** → Form control gets the **entire option object**
+
+- **If `bindLabel` specified** → Display shows `option[bindLabel]`
+- **If `bindLabel` not specified** → Tries `option.label`, then `option.name`, `option.text`, `option.title`, else stringifies object
+
+#### Examples
+
+```html
+<!-- Default behavior: if value property exists on option, it goes to form control -->
+<ith-dropdown 
+  [options]="options" 
+  [formControl]="myControl">
+</ith-dropdown>
+```
+
+```typescript
+// Example: value property present
+options = [
+  { value: 1, label: 'Available' },
+  { value: 2, label: 'Disabled', disabled: true },
+  { value: 3, label: 'Also Available' },
+];
+// myControl value will be: 1, 2, or 3 (the 'value' property)
+// Display shows 'label' property: 'Available', 'Disabled', 'Also Available'
+```
+
+```html
+<!-- Custom binding with bindLabel and bindValue -->
+<ith-dropdown 
+  [options]="users" 
+  bindLabel="fullName" 
+  bindValue="id"
+  [formControl]="userIdControl">
+</ith-dropdown>
+```
+
+```typescript
+// Example: custom properties
+users = [
+  { id: 101, fullName: 'John Doe', email: 'john@test.com' },
+  { id: 102, fullName: 'Jane Smith', email: 'jane@test.com' },
+];
+// userIdControl value will be: 101 or 102 (bindValue 'id')
+// Display shows fullName: 'John Doe' or 'Jane Smith' (bindLabel 'fullName')
+```
+
+```html
+<!-- No bindLabel/bindValue, no standard fields - entire object goes to form control -->
+<ith-dropdown 
+  [options]="items" 
+  [formControl]="myControl">
+</ith-dropdown>
+```
+
+```typescript
+// Example: completely custom structure
+items = [
+  { name: 'Product A', price: 100 },
+  { name: 'Product B', price: 200 },
+];
+// If no bindLabel and no 'label'/'name' field, it falls back to stringifying
+// If no bindValue and no 'value' field, the ENTIRE object goes to form control
+// myControl value will be: { name: 'Product A', price: 100 } or { name: 'Product B', price: 200 }
+// Display shows: "Product A" or "Product B" (since 'name' field exists)
+```
+
+### 2. Multi-select with Search
 
 ```html
 <ith-dropdown 
@@ -239,7 +321,7 @@ interface DropdownChangeEvent {
 </ith-dropdown>
 ```
 
-> **Design Preview:** ![Multi-select Dropdown](./docs/images/multiselect-dropdown.png)
+> **Design Preview:** ![Multi-select Dropdown](./docs/images/multiselect-dropdown.svg)
 > *Multi-select with checkboxes and search functionality*
 
 ### 2. Grouped Options
@@ -262,7 +344,7 @@ groupedOptions: DropdownOption[] = [
 </ith-dropdown>
 ```
 
-> **Design Preview:** ![Grouped Dropdown](./docs/images/grouped-dropdown.png)
+> **Design Preview:** ![Grouped Dropdown](./docs/images/grouped-dropdown.svg)
 > *Options organized by groups with sticky headers*
 
 ### 3. With Pagination (Large Datasets)
@@ -277,8 +359,8 @@ groupedOptions: DropdownOption[] = [
 </ith-dropdown>
 ```
 
-> **Design Preview:** ![Paginated Dropdown](./docs/images/paginated-dropdown.png)
-> *Pagination controls for handling large option lists*
+> **Design Preview:** ![Paginated Dropdown](./docs/images/paginated-dropdown.svg)
+> *Pagination controls for handling large option lists* (kehrel png svg conversion dorkar)
 
 ### 4. With Disabled Options
 
@@ -293,6 +375,108 @@ options: DropdownOption[] = [
 ```html
 <ith-dropdown [options]="options" placeholder="Select option"></ith-dropdown>
 ```
+
+### 5. Server-Side Pagination with API (for large datasets)
+
+> **Design Preview:** ![Server-side Pagination](./docs/images/pagination-serverside.svg)
+> *Server-side pagination with API calls*
+
+When you have large datasets from an API, use server-side mode:
+
+```html
+<ith-dropdown 
+  [options]="apiOptions"
+  [searchable]="true"
+  [pageable]="true"
+  [serverSide]="true"
+  [totalItems]="totalCount"
+  [loading]="isLoading"
+  [loadingText]="'Loading customers...'"
+  bindLabel="name"
+  bindValue="id"
+  [formControl]="customerControl"
+  (searchChange)="onSearch($event)"
+  (pageChange)="onPageChange($event)">
+</ith-dropdown>
+```
+
+```typescript
+import { HttpClient } from '@angular/common/http';
+import { Component, signal, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-customer-form',
+  standalone: true,
+  imports: [ReactiveFormsModule, DropdownComponent],
+  template: `
+    <form [formGroup]="form">
+      <label class="form-label">Select Customer</label>
+      <ith-dropdown 
+        [options]="apiOptions()"
+        [searchable]="true"
+        [pageable]="true"
+        [serverSide]="true"
+        [totalItems]="totalCount()"
+        [loading]="isLoading()"
+        [loadingText]="'Loading customers...'"
+        bindLabel="name"
+        bindValue="id"
+        formControlName="customerId"
+        (searchChange)="onSearch($event)"
+        (pageChange)="onPageChange($event)">
+      </ith-dropdown>
+    </form>
+  `
+})
+export class CustomerFormComponent {
+  form = new FormGroup({
+    customerId: new FormControl(null)
+  });
+  
+  apiOptions = signal<any[]>([]);
+  totalCount = signal(0);
+  isLoading = signal(false);
+  
+  private currentPage = 1;
+  private searchTerm = '';
+  
+  constructor(private http: HttpClient) {
+    this.loadCustomers(); // Initial load
+  }
+  
+  onSearch(term: string) {
+    this.searchTerm = term;
+    this.currentPage = 1;
+    this.loadCustomers();
+  }
+  
+  onPageChange(page: number) {
+    this.currentPage = page;
+    this.loadCustomers();
+  }
+  
+  loadCustomers() {
+    this.isLoading.set(true);
+    this.http.get<{items: any[], total: number}>('/api/customers', {
+      params: { page: this.currentPage, search: this.searchTerm }
+    }).subscribe(res => {
+      this.apiOptions.set(res.items);
+      this.totalCount.set(res.total);
+      this.isLoading.set(false);
+    });
+  }
+  
+  onSubmit() {
+    console.log('Selected customer:', this.form.value.customerId);
+  }
+}
+```
+
+> **Note:** In server-side mode:
+> - Pagination and search are handled by the API, not locally
+> - Use `pageChange` event to fetch next page from API
+> - Use `totalItems` to show correct pagination UI
+> - Use `loading` to show loading state
 
 ### 5. Reactive Forms Integration
 
@@ -407,8 +591,8 @@ For the best user experience, follow these guidelines:
 - **Grouping**: Use grouping when options have logical categories.
 - **Accessibility**: The component includes ARIA attributes for screen readers.
 
-> **Design Preview:** ![All Features Overview](./docs/images/all-features-overview.png)
-> *Overview of all dropdown features in action*
+> **Design Preview:** ![All Features Overview](./docs/images/all-features-overview.svg)
+> *Overview of all dropdown features in action* (kehrel png svg conversion dorkar)
 
 ## Browser Support
 
@@ -424,13 +608,14 @@ For the best user experience, follow these guidelines:
 
 To make the documentation even better, add these screenshots to `docs/images/` folder:
 
-- `basic-dropdown.png` - Basic single select
-- `multiselect-dropdown.png` - Multi-select with checkboxes
-- `grouped-dropdown.png` - Grouped options
-- `paginated-dropdown.png` - With pagination
-- `theme-comparison.png` - Light vs Dark side by side
-- `all-features-overview.png` - Comprehensive view
-- `form-integration.png` - With Angular forms
+- `basic-dropdown.svg` - Basic single select (created)
+- `multiselect-dropdown.svg` - Multi-select with checkboxes (created)
+- `grouped-dropdown.svg` - Grouped options (created)
+- `theme-comparison.svg` - Light vs Dark side by side (created)
+- `paginated-dropdown.svg` - With pagination (TODO: create)
+- `pagination-serverside.svg` - Server-side pagination with API calls (TODO: create)
+- `all-features-overview.svg` - Comprehensive view (TODO: create)
+- `form-integration.svg` - With Angular forms (TODO: create)
 
 ## Contributing
 

@@ -1,0 +1,39 @@
+<svg width="600" height="280" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="280" fill="#f8f9fa"/>
+  <text x="30" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#212529">With Pagination (Large Dataset)</text>
+  
+  <g transform="translate(30, 60)">
+    <!-- Trigger -->
+    <rect x="0" y="0" width="350" height="38" rx="4" fill="white" stroke="#ced4da" stroke-width="1"/>
+    <text x="12" y="24" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">Search from large list...</text>
+    <text x="330" y="24" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">▼</text>
+    
+    <!-- Panel -->
+    <rect x="0" y="42" width="350" height="185" rx="4" fill="white" stroke="#ced4da" stroke-width="1" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.1))"/>
+    
+    <!-- Search -->
+    <rect x="8" y="50" width="334" height="30" rx="4" fill="white" stroke="#ced4da" stroke-width="1"/>
+    <text x="18" y="69" font-family="Arial, sans-serif" font-size="13" fill="#6c757d">Search...</text>
+    <line x1="0" y1="88" x2="350" y2="88" stroke="#dee2e6" stroke-width="1"/>
+    
+    <!-- Options -->
+    <text x="12" y="108" font-family="Arial, sans-serif" font-size="14" fill="#212529">Item 1</text>
+    <text x="12" y="132" font-family="Arial, sans-serif" font-size="14" fill="#212529">Item 2</text>
+    <text x="12" y="156" font-family="Arial, sans-serif" font-size="14" fill="#212529">Item 3</text>
+    <text x="12" y="180" font-family="Arial, sans-serif" font-size="14" fill="#212529">Item 4</text>
+    <text x="12" y="204" font-family="Arial, sans-serif" font-size="14" fill="#212529">Item 5</text>
+    <text x="12" y="228" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">...</text>
+    <line x1="0" y1="97" x2="350" y2="97" stroke="#f1f1f1"/>
+    <line x1="0" y1="121" x2="350" y2="121" stroke="#f1f1f1"/>
+    <line x1="0" y1="145" x2="350" y2="145" stroke="#f1f1f1"/>
+    <line x1="0" y1="169" x2="350" y2="169" stroke="#f1f1f1"/>
+    <line x1="0" y1="193" x2="350" y2="193" stroke="#f1f1f1"/>
+    <line x1="0" y1="217" x2="350" y2="217" stroke="#f1f1f1"/>
+    
+    <!-- Pagination -->
+    <rect x="0" y="150" width="350" height="30" fill="#f8f9fa"/>
+    <text x="12" y="170" font-family="Arial, sans-serif" font-size="12" fill="#a0a0a0">Page 1 / 10</text>
+    <rect x="270" y="156" width="30" height="20" rx="4" fill="white" stroke="#ced4da"/>
+    <text x="285" y="169" font-family="Arial, sans-serif" font-size="14" fill="#212529">›</text>
+  </g>
+</svg>
