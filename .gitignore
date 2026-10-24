@@ -1,0 +1,86 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build output
+dist/
+build/
+coverage/
+.yarn-integrity
+
+# Nx cache
+tmp/
+.nx/cache/
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS generated files
+ehthumbs.db
+Icon?
+*.lzma
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+.env.example
+.env.sample
+.env.template
+
+# Temporary files
+*.tmp
+*.temp
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+.coverage
+.nyc_output
+
+# Misc
+*.sublime-project
+*.sublime-workspace
+*.sln.docstates
+*.userprefs
+
+# Yarn
+.yarnrc
+.yarn-integrity
+.yarn-prune-state.yaml
+
+# NPM
+package-lock.json
+pnpm-lock.yaml
+
+# Jest
+coverage/
+.test-results
+
+# Server/Intermediate artifacts (dev servers often create these)
+public/
+static/
+*.bak
+
+# Generated/temporary build artifacts
+*.patch
+*.rej
+.angular
+.nx
