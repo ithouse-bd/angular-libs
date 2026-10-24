@@ -1,36 +1,11 @@
-<svg width="700" height="220" xmlns="http://www.w3.org/2000/svg">
-  <rect width="700" height="220" fill="#f8f9fa"/>
-  <text x="30" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#212529">Light Theme vs Dark Theme</text>
-  
-  <!-- Light Theme -->
-  <text x="30" y="55" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#212529">Light Theme</text>
-  <g transform="translate(30, 65)">
-    <rect x="0" y="0" width="300" height="38" rx="4" fill="white" stroke="#ced4da" stroke-width="1"/>
-    <text x="12" y="24" font-family="Arial, sans-serif" font-size="13" fill="#212529">Option Selected</text>
-    <text x="280" y="24" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">▼</text>
-    
-    <rect x="0" y="42" width="300" height="90" rx="4" fill="white" stroke="#ced4da" stroke-width="1" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.1))"/>
-    <rect x="0" y="42" width="300" height="30" fill="#e7f1ff"/>
-    <text x="12" y="61" font-family="Arial, sans-serif" font-size="13" fill="#0d6efd">Option Selected</text>
-    <text x="12" y="91" font-family="Arial, sans-serif" font-size="13" fill="#212529">Other Option</text>
-    <line x1="0" y1="72" x2="300" y2="72" stroke="#dee2e6"/>
-    <text x="12" y="121" font-family="Arial, sans-serif" font-size="13" fill="#212529">Another Option</text>
-    <line x1="0" y1="102" x2="300" y2="102" stroke="#dee2e6"/>
-  </g>
-  
-  <!-- Dark Theme -->
-  <text x="370" y="55" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#212529">Dark Theme</text>
-  <g transform="translate(370, 65)">
-    <rect x="0" y="0" width="300" height="38" rx="4" fill="#1e1e1e" stroke="#3d3d3d" stroke-width="1"/>
-    <text x="12" y="24" font-family="Arial, sans-serif" font-size="13" fill="#e1e1e1">Option Selected</text>
-    <text x="280" y="24" font-family="Arial, sans-serif" font-size="10" fill="#a0a0a0">▼</text>
-    
-    <rect x="0" y="42" width="300" height="90" rx="4" fill="#1e1e1e" stroke="#3d3d3d" stroke-width="1" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.5))"/>
-    <rect x="0" y="42" width="300" height="30" fill="#1a365d"/>
-    <text x="12" y="61" font-family="Arial, sans-serif" font-size="13" fill="#63b3ed">Option Selected</text>
-    <text x="12" y="91" font-family="Arial, sans-serif" font-size="13" fill="#e1e1e1">Other Option</text>
-    <line x1="0" y1="72" x2="300" y2="72" stroke="#3d3d3d"/>
-    <text x="12" y="121" font-family="Arial, sans-serif" font-size="13" fill="#e1e1e1">Another Option</text>
-    <line x1="0" y1="102" x2="300" y2="102" stroke="#3d3d3d"/>
-  </g>
+<svg width="500" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="200" fill="#f8f9fa"/>
+  <text x="125" y="30" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#212529">Light Theme</text>
+  <rect x="25" y="50" width="200" height="40" rx="4" fill="white" stroke="#ced4da" stroke-width="1"/>
+  <text x="40" y="75" font-family="Arial, sans-serif" font-size="13" fill="#212529">Select option</text>
+  <polygon points="210,65 220,75 200,75" fill="#6c757d"/>
+  <text x="375" y="30" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#212529">Dark Theme</text>
+  <rect x="275" y="50" width="200" height="40" rx="4" fill="#1e1e1e" stroke="#3d3d3d" stroke-width="1"/>
+  <text x="290" y="75" font-family="Arial, sans-serif" font-size="13" fill="#e1e1e1">Select option</text>
+  <polygon points="460,65 470,75 450,75" fill="#a0a0a0"/>
 </svg>
