@@ -1,0 +1,170 @@
+<div class="ith-dropdown" [class.ith-dropdown-disabled]="disabled()" [class.ith-dropdown-open]="isOpen()">
+  <!-- Dropdown Trigger -->
+  <div 
+    class="ith-dropdown-trigger" 
+    (click)="toggleDropdown()"
+    (keydown)="onTriggerKeydown($event)"
+    [tabindex]="disabled() ? -1 : 0"
+    role="combobox"
+    [attr.id]="idBase + '-trigger'"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-controls]="isOpen() ? idBase + '-listbox' : null"
+    [attr.aria-haspopup]="'listbox'"
+    [attr.aria-activedescendant]="isOpen() ? activeOptionId() : null"
+    [attr.aria-disabled]="disabled()"
+    aria-autocomplete="none">
+    <span class="ith-dropdown-display" [class.ith-dropdown-placeholder]="!hasSelection()">
+      {{ displayValue }}
+    </span>
+    <span class="ith-dropdown-actions">
+      @if (clearable() && hasSelection()) {
+        <button 
+          type="button"
+          class="ith-dropdown-clear"
+          (click)="clearAll($event)"
+          aria-label="Clear selection">
+          ×
+        </button>
+      }
+      <span class="ith-dropdown-arrow" [class.ith-dropdown-arrow-up]="isOpen()" aria-hidden="true">▼</span>
+    </span>
+  </div>
+
+  <!-- Dropdown Panel -->
+  @if (isOpen()) {
+    <div class="ith-dropdown-panel" role="listbox" [attr.id]="idBase + '-listbox'" [attr.aria-multiselectable]="multiple()">
+      <!-- Search Box -->
+      @if (searchable()) {
+        <div class="ith-dropdown-search">
+          <input 
+            type="text"
+            class="ith-dropdown-search-input"
+            [placeholder]="searchPlaceholder()"
+            [value]="searchTerm()"
+            (input)="onSearchChange($any($event.target).value)"
+            (keydown)="onSearchKeydown($event)"
+            (click)="$event.stopPropagation()"
+            [attr.aria-controls]="idBase + '-listbox'"
+            aria-autocomplete="list"
+            autocomplete="off">
+        </div>
+      }
+
+      <!-- Select All / Actions -->
+      @if (multiple() && showSelectAll() && filteredOptions().length > 0) {
+        <div class="ith-dropdown-actions-bar">
+          <button type="button" class="ith-dropdown-action-btn" (click)="selectAll(); $event.stopPropagation()">Select All</button>
+          <button type="button" class="ith-dropdown-action-btn" (click)="clearAll($event); $event.stopPropagation()">Clear All</button>
+        </div>
+      }
+
+      <!-- Loading State -->
+      @if (loading()) {
+        <div class="ith-dropdown-loading">
+          {{ loadingText() }}
+        </div>
+      }
+
+      <!-- Options List -->
+      @if (!loading()) {
+        <div 
+          class="ith-dropdown-options" 
+          [style.max-height]="maxHeight()"
+          (scroll)="onOptionsScroll($event)">
+          @if (groupBy()) {
+            @for (group of groupedOptions(); track group.name) {
+              <div>
+                @if (group.name) {
+                  <div class="ith-dropdown-group-header" role="presentation">{{ group.name }}</div>
+                }
+                @for (option of group.options; track option) {
+                  <div 
+                    #optionEl
+                    class="ith-dropdown-option"
+                    [class.ith-dropdown-option-selected]="isSelected(option)"
+                    [class.ith-dropdown-option-disabled]="option['disabled']"
+                    [class.ith-dropdown-option-active]="isActive(option)"
+                    (click)="selectOption(option); $event.stopPropagation()"
+                    role="option"
+                    [attr.id]="idOf(option)"
+                    [attr.aria-selected]="isSelected(option)"
+                    [attr.aria-disabled]="option['disabled'] || null">
+                    @if (multiple()) {
+                      <span class="ith-dropdown-checkbox">
+                        <input type="checkbox" [checked]="isSelected(option)" [disabled]="option['disabled']" readonly tabindex="-1">
+                      </span>
+                    }
+                    <span class="ith-dropdown-option-label">{{ getLabel(option) }}</span>
+                  </div>
+                }
+              </div>
+            }
+          } @else {
+            @for (option of visibleOptions(); track option) {
+              <div 
+                #optionEl
+                class="ith-dropdown-option"
+                [class.ith-dropdown-option-selected]="isSelected(option)"
+                [class.ith-dropdown-option-disabled]="option['disabled']"
+                [class.ith-dropdown-option-active]="isActive(option)"
+                (click)="selectOption(option); $event.stopPropagation()"
+                role="option"
+                [attr.id]="idOf(option)"
+                [attr.aria-selected]="isSelected(option)"
+                [attr.aria-disabled]="option['disabled'] || null">
+                @if (multiple()) {
+                  <span class="ith-dropdown-checkbox">
+                    <input type="checkbox" [checked]="isSelected(option)" [disabled]="option['disabled']" readonly tabindex="-1">
+                  </span>
+                }
+                <span class="ith-dropdown-option-label">{{ getLabel(option) }}</span>
+              </div>
+            }
+          }
+
+          <!-- No options message -->
+          @if (filteredOptions().length === 0) {
+            <div class="ith-dropdown-no-options">
+              {{ noOptionsText() }}
+            </div>
+          }
+
+          <!-- Infinite scroll sentinel: shows while more items can be revealed -->
+          @if (infiniteScroll() && canLoadMore()) {
+            <div class="ith-dropdown-load-more">
+              <button 
+                type="button" 
+                class="ith-dropdown-action-btn" 
+                (click)="loadMoreNow(); $event.stopPropagation()">
+                Load more…
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Pagination (button mode; hidden when infinite scroll is active) -->
+      @if (pageable() && !infiniteScroll() && filteredOptions().length > 0 && !loading()) {
+        <div class="ith-dropdown-pagination">
+          <button 
+            type="button" 
+            class="ith-dropdown-page-btn" 
+            [disabled]="!hasPreviousPage()"
+            (click)="previousPage(); $event.stopPropagation()"
+            aria-label="Previous page">
+            ‹
+          </button>
+          <span class="ith-dropdown-page-info">Page {{ currentPage() }} / {{ totalPages() }}</span>
+          <button 
+            type="button" 
+            class="ith-dropdown-page-btn" 
+            [disabled]="!hasNextPage()"
+            (click)="nextPage(); $event.stopPropagation()"
+            aria-label="Next page">
+            ›
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

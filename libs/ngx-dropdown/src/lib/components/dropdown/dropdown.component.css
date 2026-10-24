@@ -1,0 +1,342 @@
+/* CSS Variables for theming */
+.ith-dropdown {
+  --ith-bg: #ffffff;
+  --ith-text: #212529;
+  --ith-border: #ced4da;
+  --ith-border-focus: #86b7fe;
+  --ith-shadow-focus: rgba(13, 110, 253, 0.25);
+  --ith-hover-bg: #f8f9fa;
+  --ith-selected-bg: #e7f1ff;
+  --ith-selected-text: #0d6efd;
+  --ith-selected-hover-bg: #d0e3ff;
+  --ith-disabled-bg: #e9ecef;
+  --ith-disabled-opacity: 0.6;
+  --ith-placeholder: #6c757d;
+  --ith-group-bg: #f8f9fa;
+  --ith-group-text: #495057;
+  --ith-panel-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --ith-search-border: #ced4da;
+  --ith-action-bg: #f8f9fa;
+  --ith-page-bg: #ffffff;
+  
+  position: relative;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+/* Dark Theme
+   `:host-context()` is required: the theme attribute is set on <html>/<body>,
+   outside this component, and a plain `[data-theme="dark"] .ith-dropdown`
+   selector would get the component's scoping attribute on the ancestor and
+   never match. */
+:host-context([data-theme="dark"]) .ith-dropdown,
+:host-context(.dark) .ith-dropdown {
+  --ith-bg: #1e1e1e;
+  --ith-text: #e1e1e1;
+  --ith-border: #3d3d3d;
+  --ith-border-focus: #4dabf7;
+  --ith-shadow-focus: rgba(77, 171, 247, 0.25);
+  --ith-hover-bg: #2d2d2d;
+  --ith-selected-bg: #1a365d;
+  --ith-selected-text: #63b3ed;
+  --ith-selected-hover-bg: #2a4365;
+  --ith-disabled-bg: #2d2d2d;
+  --ith-disabled-opacity: 0.5;
+  --ith-placeholder: #a0a0a0;
+  --ith-group-bg: #252525;
+  --ith-group-text: #b0b0b0;
+  --ith-panel-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+  --ith-search-border: #3d3d3d;
+  --ith-action-bg: #252525;
+  --ith-page-bg: #1e1e1e;
+}
+
+/* Auto theme based on system preference */
+@media (prefers-color-scheme: dark) {
+  :host-context([data-theme="auto"]) .ith-dropdown {
+    --ith-bg: #1e1e1e;
+    --ith-text: #e1e1e1;
+    --ith-border: #3d3d3d;
+    --ith-border-focus: #4dabf7;
+    --ith-shadow-focus: rgba(77, 171, 247, 0.25);
+    --ith-hover-bg: #2d2d2d;
+    --ith-selected-bg: #1a365d;
+    --ith-selected-text: #63b3ed;
+    --ith-selected-hover-bg: #2a4365;
+    --ith-disabled-bg: #2d2d2d;
+    --ith-disabled-opacity: 0.5;
+    --ith-placeholder: #a0a0a0;
+    --ith-group-bg: #252525;
+    --ith-group-text: #b0b0b0;
+    --ith-panel-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+    --ith-search-border: #3d3d3d;
+    --ith-action-bg: #252525;
+    --ith-page-bg: #1e1e1e;
+  }
+}
+
+.ith-dropdown-disabled {
+  opacity: var(--ith-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.ith-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid var(--ith-border);
+  border-radius: 4px;
+  background-color: var(--ith-bg);
+  color: var(--ith-text);
+  cursor: pointer;
+  min-height: 38px;
+  user-select: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.ith-dropdown-disabled .ith-dropdown-trigger {
+  cursor: not-allowed;
+  background-color: var(--ith-disabled-bg);
+}
+
+.ith-dropdown-open .ith-dropdown-trigger {
+  border-color: var(--ith-border-focus);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem var(--ith-shadow-focus);
+}
+
+.ith-dropdown-display {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ith-dropdown-placeholder {
+  color: var(--ith-placeholder);
+}
+
+.ith-dropdown-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ith-dropdown-clear {
+  background: none;
+  border: none;
+  color: var(--ith-placeholder);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.ith-dropdown-clear:hover {
+  color: #dc3545;
+}
+
+.ith-dropdown-arrow {
+  color: var(--ith-placeholder);
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.ith-dropdown-arrow-up {
+  transform: rotate(180deg);
+}
+
+.ith-dropdown-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background-color: var(--ith-bg);
+  color: var(--ith-text);
+  border: 1px solid var(--ith-border);
+  border-radius: 4px;
+  box-shadow: var(--ith-panel-shadow);
+  z-index: 1000;
+  max-width: 100%;
+}
+
+.ith-dropdown-search {
+  padding: 8px;
+  border-bottom: 1px solid var(--ith-border);
+}
+
+.ith-dropdown-search-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--ith-search-border);
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: var(--ith-bg);
+  color: var(--ith-text);
+}
+
+.ith-dropdown-search-input:focus {
+  outline: 0;
+  border-color: var(--ith-border-focus);
+  box-shadow: 0 0 0 0.25rem var(--ith-shadow-focus);
+}
+
+.ith-dropdown-search-input::placeholder {
+  color: var(--ith-placeholder);
+}
+
+.ith-dropdown-actions-bar {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ith-border);
+  background-color: var(--ith-action-bg);
+}
+
+.ith-dropdown-action-btn {
+  background: none;
+  border: none;
+  color: var(--ith-selected-text);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+}
+
+.ith-dropdown-action-btn:hover {
+  text-decoration: underline;
+}
+
+.ith-dropdown-loading {
+  padding: 12px;
+  text-align: center;
+  color: var(--ith-placeholder);
+  font-size: 14px;
+}
+
+.ith-dropdown-options {
+  overflow-y: auto;
+  max-height: 250px;
+}
+
+.ith-dropdown-group-header {
+  padding: 6px 12px;
+  background-color: var(--ith-group-bg);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ith-group-text);
+  border-bottom: 1px solid var(--ith-border);
+  position: sticky;
+  top: 0;
+}
+
+.ith-dropdown-option {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  gap: 8px;
+  color: var(--ith-text);
+}
+
+.ith-dropdown-option:hover:not(.ith-dropdown-option-disabled) {
+  background-color: var(--ith-hover-bg);
+}
+
+.ith-dropdown-option-selected {
+  background-color: var(--ith-selected-bg);
+  color: var(--ith-selected-text);
+}
+
+.ith-dropdown-option-selected:hover {
+  background-color: var(--ith-selected-hover-bg);
+}
+
+.ith-dropdown-option-active {
+  background-color: var(--ith-hover-bg);
+  outline: none;
+}
+
+.ith-dropdown-option-active.ith-dropdown-option-selected {
+  background-color: var(--ith-selected-hover-bg);
+}
+
+.ith-dropdown-option-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ith-dropdown-load-more {
+  padding: 6px 8px;
+  text-align: center;
+  border-top: 1px solid var(--ith-border);
+}
+
+.ith-dropdown-load-more .ith-dropdown-action-btn {
+  width: 100%;
+  cursor: pointer;
+}
+
+.ith-dropdown-checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.ith-dropdown-checkbox input {
+  cursor: pointer;
+}
+
+.ith-dropdown-option-disabled .ith-dropdown-checkbox input {
+  cursor: not-allowed;
+}
+
+.ith-dropdown-option-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ith-dropdown-no-options {
+  padding: 12px;
+  text-align: center;
+  color: var(--ith-placeholder);
+  font-size: 14px;
+}
+
+.ith-dropdown-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-top: 1px solid var(--ith-border);
+  background-color: var(--ith-action-bg);
+}
+
+.ith-dropdown-page-btn {
+  background: none;
+  border: 1px solid var(--ith-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  background-color: var(--ith-page-bg);
+  color: var(--ith-text);
+}
+
+.ith-dropdown-page-btn:hover:not(:disabled) {
+  background-color: var(--ith-hover-bg);
+}
+
+.ith-dropdown-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ith-dropdown-page-info {
+  font-size: 13px;
+  color: var(--ith-group-text);
+}

@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities that won't conflict with Bootstrap */
+@layer utilities {
+  .tw-container-custom {
+    @apply tw-mx-auto tw-px-4;
+  }
+}
