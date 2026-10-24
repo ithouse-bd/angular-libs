@@ -1,0 +1,11 @@
+/* Component specific styles */
+.btn-group .btn.active {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+[data-theme="dark"] .btn-group .btn.active {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}

@@ -22,7 +22,9 @@ A modern, feature-rich Angular dropdown/select component built for global use wi
 | Multi-select | ✅ | Select multiple options with checkboxes |
 | Searchable/Filterable | ✅ | Filter options by typing |
 | Grouped Options | ✅ | Organize options into groups/categories |
-| Pagination | ✅ | Handle large datasets with pagination |
+| Pagination | ✅ | Handle large datasets with pagination buttons |
+| Infinite Scroll | ✅ | Auto load-more on scroll (client- or server-side) |
+| Keyboard Navigation | ✅ | Full keyboard support (arrows, Home/End, Enter, Escape) |
 | Disabled Options | ✅ | Disable specific options |
 | Disable Dropdown | ✅ | Disable the entire component |
 | Select All/Clear All | ✅ | Bulk actions in multi-select mode |
@@ -68,6 +70,21 @@ import { AppComponent } from './app.component';
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+```
+
+Or, if you use standalone components, import the component directly (requires **Angular 17+** — the template uses built-in `@if`/`@for` control flow):
+
+```typescript
+import { Component } from '@angular/core';
+import { DropdownComponent } from '@ithouse/ngx-dropdown';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [DropdownComponent],
+  templateUrl: './app.component.html'
+})
+export class AppComponent {}
 ```
 
 ### 2. Use in Template
@@ -177,12 +194,17 @@ export class ThemeService {
 | `multiple` | `boolean` | `false` | Enable multi-selection mode |
 | `searchable` | `boolean` | `true` | Enable search/filter functionality |
 | `disabled` | `boolean` | `false` | Disable entire dropdown |
-| `pageable` | `boolean` | `false` | Enable pagination for large lists |
-| `pageSize` | `number` | `10` | Number of options per page |
+| `pageable` | `boolean` | `false` | Enable pagination (prev/next buttons) for large lists |
+| `pageSize` | `number` | `10` | Number of options per page / per scroll chunk |
+| `infiniteScroll` | `boolean` | `false` | Auto load-more on scroll; takes precedence over `pageable` |
+| `hasMore` | `boolean` | `true` | (Server-side infinite scroll) whether more pages exist |
 | `groupBy` | `string` | `undefined` | Property name to group options by |
 | `showSelectAll` | `boolean` | `true` | Show "Select All" button in multi-select mode |
 | `clearable` | `boolean` | `true` | Show clear button to reset selection |
 | `closeOnSelect` | `boolean` | `true` | Auto-close dropdown after selection (single select only) |
+| `maxHeight` | `string` | `'250px'` | Max height of the options list |
+| `searchPlaceholder` | `string` | `'Search...'` | Placeholder for the search input |
+| `noOptionsText` | `string` | `'No options found'` | Text shown when the filter yields no results |
 | `bindLabel` | `string` | `undefined` | Property to display (defaults to 'label', falls back to 'name','text','title') |
 | `bindValue` | `string` | `undefined` | Property for form value (if not set, uses 'value' or entire object) |
 | `serverSide` | `boolean` | `false` | Enable server-side pagination/search for API calls |
@@ -197,6 +219,22 @@ export class ThemeService {
 | `selectionChange` | `EventEmitter<DropdownChangeEvent>` | Emits when selection changes |
 | `searchChange` | `EventEmitter<string>` | Emits when search term changes |
 | `openChange` | `EventEmitter<boolean>` | Emits when dropdown opens/closes |
+| `pageChange` | `EventEmitter<number>` | Emits when the page changes (button pagination / server-side search reset) |
+| `loadMore` | `EventEmitter<void>` | Emits (server-side infinite scroll) when the user reaches the end of the list |
+
+### Keyboard Navigation
+
+The dropdown implements the WAI-ARIA combobox pattern. When the trigger has focus:
+
+| Key | Closed dropdown | Open dropdown |
+|-----|-----------------|---------------|
+| `ArrowDown` | Open, highlight first option | Highlight next option |
+| `ArrowUp` | Open, highlight last option | Highlight previous option |
+| `Home` / `End` | — | Highlight first / last option |
+| `Enter` / `Space` | Open | Select highlighted option |
+| `Escape` | — | Close dropdown |
+
+Disabled options are skipped. Highlighted options scroll into view automatically.
 
 ### Interfaces
 
@@ -220,14 +258,20 @@ interface DropdownConfig {
   clearable?: boolean;
   searchPlaceholder?: string;
   noOptionsText?: string;
+  loadingText?: string;
   pageable?: boolean;
   pageSize?: number;
   groupBy?: string;
+  serverSide?: boolean;
+  totalItems?: number;
+  loading?: boolean;
+  infiniteScroll?: boolean;
+  hasMore?: boolean;
 }
 
 interface DropdownChangeEvent {
   value: any | any[];
-  selectedOptions: DropdownOption | DropdownOption[];
+  selectedItems: DropdownOption | DropdownOption[] | null;
 }
 ```
 
@@ -347,7 +391,7 @@ groupedOptions: DropdownOption[] = [
 > **Design Preview:** ![Grouped Dropdown](./docs/images/grouped-dropdown.svg)
 > *Options organized by groups with sticky headers*
 
-### 3. With Pagination (Large Datasets)
+### 4. With Pagination (Large Datasets)
 
 ```html
 <ith-dropdown 
@@ -362,7 +406,78 @@ groupedOptions: DropdownOption[] = [
 > **Design Preview:** ![Paginated Dropdown](./docs/images/paginated-dropdown.svg)
 > *Pagination controls for handling large option lists* (kehrel png svg conversion dorkar)
 
-### 4. With Disabled Options
+### 5. With Infinite Scroll (Large Datasets)
+
+Instead of prev/next buttons, options are revealed automatically as the user scrolls to the bottom. A "Load more…" button is rendered as a fallback.
+
+**Client-side** (options are sliced locally and grown on scroll):
+
+```html
+<ith-dropdown 
+  [options]="largeDataset" 
+  [infiniteScroll]="true"
+  [pageSize]="20"
+  [searchable]="true"
+  placeholder="Scroll to explore 1000+ items">
+</ith-dropdown>
+```
+
+**Server-side** (each scroll chunk is fetched from your API):
+
+```typescript
+export class CustomerFormComponent {
+  options = signal<any[]>([]);
+  hasMorePages = signal(true);
+  isLoading = signal(false);
+  private page = 1;
+  private search = '';
+
+  onSearch(term: string) {
+    this.search = term;
+    this.page = 1;
+    this.options.set([]);
+    this.hasMorePages.set(true);
+    this.fetchChunk();
+  }
+
+  loadNextPage() {
+    if (this.isLoading() || !this.hasMorePages()) return;
+    this.page++;
+    this.fetchChunk();
+  }
+
+  private fetchChunk() {
+    this.isLoading.set(true);
+    this.http
+      .get<{ items: any[]; hasMore: boolean }>('/api/customers', {
+        params: { page: this.page, search: this.search },
+      })
+      .subscribe((res) => {
+        this.options.update((cur) => [...cur, ...res.items]);
+        this.hasMorePages.set(res.hasMore);
+        this.isLoading.set(false);
+      });
+  }
+}
+```
+
+```html
+<ith-dropdown 
+  [options]="options()"
+  [infiniteScroll]="true"
+  [serverSide]="true"
+  [loading]="isLoading()"
+  [hasMore]="hasMorePages()"
+  bindLabel="name"
+  bindValue="id"
+  (loadMore)="loadNextPage()"
+  (searchChange)="onSearch($event)">
+</ith-dropdown>
+```
+
+> **Note:** `infiniteScroll` takes precedence over `pageable` when both are set.
+
+### 6. With Disabled Options
 
 ```typescript
 options: DropdownOption[] = [
@@ -376,7 +491,7 @@ options: DropdownOption[] = [
 <ith-dropdown [options]="options" placeholder="Select option"></ith-dropdown>
 ```
 
-### 5. Server-Side Pagination with API (for large datasets)
+### 7. Server-Side Pagination with API (for large datasets)
 
 > **Design Preview:** ![Server-side Pagination](./docs/images/pagination-serverside.svg)
 > *Server-side pagination with API calls*
@@ -478,7 +593,7 @@ export class CustomerFormComponent {
 > - Use `totalItems` to show correct pagination UI
 > - Use `loading` to show loading state
 
-### 5. Reactive Forms Integration
+### 8. Reactive Forms Integration
 
 ```typescript
 import { FormBuilder, FormGroup } from '@angular/forms';
@@ -585,9 +700,9 @@ You can also target specific classes for more granular control:
 For the best user experience, follow these guidelines:
 
 - **Width**: The dropdown takes full width by default. Use container constraints as needed.
-- **Height**: Default max-height is 250px. Adjust via `config.maxHeight` for your use case.
+- **Height**: Default max-height is 250px. Adjust via the `maxHeight` input for your use case.
 - **Search**: Enable search for lists with 10+ items for better UX.
-- **Pagination**: Use pagination for lists with 50+ items to improve performance.
+- **Pagination / Infinite Scroll**: For lists with 50+ items, use `pageable` (prev/next buttons) or `infiniteScroll` (auto load-more) to improve performance. Prefer `infiniteScroll` for a more modern, less cluttered UX.
 - **Grouping**: Use grouping when options have logical categories.
 - **Accessibility**: The component includes ARIA attributes for screen readers.
 

@@ -45,7 +45,7 @@
     },
     "@nx/angular:library": {
       "linter": "eslint",
-      "unitTestRunner": "jest"
+      "unitTestRunner": "jest",
       "style": "css"
     },
     "@nx/angular:component": {
