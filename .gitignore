@@ -67,7 +67,7 @@ yarn-error.log*
 .yarn-prune-state.yaml
 
 # NPM
-package-lock.json
+# package-lock.json must stay tracked: `npm ci` and the CI npm cache need it.
 pnpm-lock.yaml
 
 # Jest
