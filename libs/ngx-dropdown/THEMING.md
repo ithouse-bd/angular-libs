@@ -1,4 +1,4 @@
-# Theming Guide for @ithouse/ngx-dropdown
+# Theming Guide for @ithouse-bd/ngx-dropdown
 
 This guide will help you customize the appearance of the dropdown to match your application's design system.
 

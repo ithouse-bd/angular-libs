@@ -1,22 +1,13 @@
-# Tailwind Bootstrap Workspace
+# Angular Libraries — `@ithouse-bd/ngx-dropdown`
 
-This Nx monorepo contains:
-- **Tailwind CSS Library** (`libs/tailwind-styles`) - Tailwind CSS configured with `tw-` prefix to avoid conflicts with Bootstrap
-- **UI Components Library** (`libs/ui-components`) - Reusable Angular components using Tailwind CSS
-- **Dropdown Library** (`libs/ngx-dropdown`) - Advanced dropdown component with multiselect, search, grouping, pagination features
-- **Demo App** (`apps/demo-app`) - Example app showing Tailwind + Bootstrap integration
+An Nx workspace that builds and publishes Angular component libraries.
 
-## Dropdown Library Name Suggestions for @ithouse org
-
-For publishing to the iTHouse GitHub organization, here are some recommended package names:
-
-1. **`@ithouse/ngx-dropdown`** (Recommended) - Clean, follows Angular package naming conventions, clearly describes the component
-2. **`@ithouse/ngx-select`** - Shorter alternative, common naming for select/dropdown components
-3. **`@ithouse/iselect`** - Very short and memorable
-4. **`@ithouse/ng-select`** - Similar to popular ng-select but namespaced to your org
-5. **`@ithouse/ui-dropdown`** - Good if you want a more generic UI component name
-
-I recommend **`@ithouse/ngx-dropdown`** as it's descriptive, follows the ngx- prefix convention used by Angular ecosystem libraries, and clearly indicates it's an Angular component.
+| Project | Path | Description |
+| --- | --- | --- |
+| **`ngx-dropdown`** | [libs/ngx-dropdown](libs/ngx-dropdown) | **Published to npm as [`@ithouse-bd/ngx-dropdown`](https://www.npmjs.com/package/@ithouse-bd/ngx-dropdown).** Advanced dropdown / multi-select for **Angular 20+** with search, grouping, pagination, infinite scroll, keyboard navigation and light/dark theming. |
+| `ui-components` | [libs/ui-components](libs/ui-components) | Small Tailwind-based component set (`lib-card`, `lib-button`). Workspace only. |
+| `tailwind-styles` | [libs/tailwind-styles](libs/tailwind-styles) | Tailwind configured with the `tw-` prefix so it can live next to Bootstrap. |
+| `demo-app` | [apps/demo-app](apps/demo-app) | Demo application exercising every dropdown feature. |
 
 ## Setup
 
@@ -27,35 +18,53 @@ npm install
 ## Development
 
 ```bash
-# Serve the demo app
-npx nx serve demo-app
-
-# Build the dropdown library
-npx nx build ngx-dropdown
-
-# Build all projects
-npx nx build
+npx nx serve demo-app     # http://localhost:4200
+npx nx build ngx-dropdown # build the publishable library
+npx nx build demo-app     # build the demo app
+npx nx build              # build everything
 ```
 
-## Using Tailwind with Bootstrap
-
-The tailwind-styles library is configured with:
-- `prefix: 'tw-'` - All Tailwind utilities are prefixed to avoid conflicts with Bootstrap
-- `preflight: false` - Bootstrap's reset/normalize is preserved
-
-To use in your app:
-
-1. Import Tailwind styles in your app's styles
-2. Use Tailwind classes with `tw-` prefix: `tw-bg-blue-500`, `tw-p-4`, etc.
-3. Use Bootstrap classes normally: `btn btn-primary`, `card`, etc.
-
-## Publishing the Dropdown Library
+## The dropdown library
 
 ```bash
-# Build the library
-npx nx build ngx-dropdown --configuration=production
-
-# Publish from dist folder
-cd dist/libs/ngx-dropdown
-npm publish --access public
+npm install @ithouse-bd/ngx-dropdown
 ```
+
+```typescript
+import { DropdownComponent, DropdownOption } from '@ithouse-bd/ngx-dropdown';
+
+@Component({
+  imports: [DropdownComponent],
+  template: `<ith-dropdown [options]="options" [multiple]="true"></ith-dropdown>`,
+})
+export class MyComponent {}
+```
+
+- Full guide: [libs/ngx-dropdown/README.md](libs/ngx-dropdown/README.md)
+- Documentation: [libs/ngx-dropdown/DOCUMENTATION.md](libs/ngx-dropdown/DOCUMENTATION.md)
+- Theming: [libs/ngx-dropdown/THEMING.md](libs/ngx-dropdown/THEMING.md)
+- Changelog: [libs/ngx-dropdown/CHANGELOG.md](libs/ngx-dropdown/CHANGELOG.md)
+- Screenshots: [libs/ngx-dropdown/docs/images](libs/ngx-dropdown/docs/images)
+
+## Publishing
+
+Releases are published to npm by GitHub Actions when a `v*` tag is pushed, using npm
+Trusted Publishing (no npm token in the repository).
+
+```bash
+# 1. bump libs/ngx-dropdown/package.json + CHANGELOG.md
+# 2. tag and push
+git tag v1.0.1
+git push origin main --follow-tags
+```
+
+The complete setup and troubleshooting guide is in [PUBLISHING.md](PUBLISHING.md).
+
+## Tailwind and Bootstrap together
+
+The Tailwind libraries are configured with:
+
+- `prefix: 'tw-'` — utilities are prefixed so they never collide with Bootstrap classes
+- `preflight: false` — Bootstrap's reset is preserved
+
+Use `tw-bg-blue-500` next to `btn btn-primary` without conflicts.

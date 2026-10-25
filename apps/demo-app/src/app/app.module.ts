@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { UiComponentsModule } from '@tailwind-bootstrap/ui-components';
-import { NgxDropdownModule } from '@ithouse/ngx-dropdown';
+import { NgxDropdownModule } from '@ithouse-bd/ngx-dropdown';
 
 import { AppComponent } from './app.component';
 

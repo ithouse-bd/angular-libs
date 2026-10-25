@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'lib-button',
-  standalone: true,
   template: `
     <button 
       [type]="type"

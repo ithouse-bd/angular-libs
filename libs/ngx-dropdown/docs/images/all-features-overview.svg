@@ -1,6 +1,6 @@
 <svg width="640" height="400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Overview of the ith-dropdown features">
   <rect width="640" height="400" fill="#f8f9fa"/>
-  <text x="320" y="30" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#212529">@ithouse/ngx-dropdown — Feature Overview</text>
+  <text x="320" y="30" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#212529">@ithouse-bd/ngx-dropdown — Feature Overview</text>
 
   <!-- Column 1: single / multi select -->
   <rect x="30" y="55" width="280" height="36" rx="4" fill="#ffffff" stroke="#86b7fe" stroke-width="2"/>

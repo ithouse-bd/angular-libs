@@ -2,7 +2,6 @@ import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'lib-card',
-  standalone: true,
   template: `
     <div class="tw-bg-white tw-shadow-lg tw-rounded-lg tw-overflow-hidden tw-border tw-border-gray-200">
       <div class="tw-px-6 tw-py-4">

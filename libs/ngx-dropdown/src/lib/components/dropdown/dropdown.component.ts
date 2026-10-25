@@ -20,7 +20,6 @@ let idCounter = 0;
 
 @Component({
   selector: 'ith-dropdown',
-  standalone: true,
   templateUrl: './dropdown.component.html',
   styleUrls: ['./dropdown.component.css'],
   providers: [

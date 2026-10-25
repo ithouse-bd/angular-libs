@@ -1,4 +1,4 @@
-# @ithouse/ngx-dropdown Documentation
+# @ithouse-bd/ngx-dropdown Documentation
 
 A modern, feature-rich Angular dropdown/select component built for global use with full theming support.
 
@@ -33,21 +33,27 @@ A modern, feature-rich Angular dropdown/select component built for global use wi
 | Dark/Light Theme | ✅ | Built-in theme support with CSS variables |
 | Customizable | ✅ | Highly customizable via CSS variables |
 
+## Requirements
+
+- **Angular 20 or newer** (the component is standalone by default, uses signal inputs and
+the built-in `@if` / `@for` control flow)
+- `@angular/common`, `@angular/core` and `@angular/forms` as peer dependencies
+
 ## Installation
 
 ### NPM
 ```bash
-npm install @ithouse/ngx-dropdown
+npm install @ithouse-bd/ngx-dropdown
 ```
 
 ### Yarn
 ```bash
-yarn add @ithouse/ngx-dropdown
+yarn add @ithouse-bd/ngx-dropdown
 ```
 
 ### PNPM
 ```bash
-pnpm add @ithouse/ngx-dropdown
+pnpm add @ithouse-bd/ngx-dropdown
 ```
 
 ## Quick Start
@@ -57,7 +63,7 @@ pnpm add @ithouse/ngx-dropdown
 ```typescript
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { NgxDropdownModule } from '@ithouse/ngx-dropdown';
+import { NgxDropdownModule } from '@ithouse-bd/ngx-dropdown';
 
 import { AppComponent } from './app.component';
 
@@ -72,15 +78,14 @@ import { AppComponent } from './app.component';
 export class AppModule { }
 ```
 
-Or, if you use standalone components, import the component directly (requires **Angular 17+** — the template uses built-in `@if`/`@for` control flow):
+Or, if you use standalone components, import the component directly — the component is standalone by default (requires **Angular 20+**):
 
 ```typescript
 import { Component } from '@angular/core';
-import { DropdownComponent } from '@ithouse/ngx-dropdown';
+import { DropdownComponent } from '@ithouse-bd/ngx-dropdown';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [DropdownComponent],
   templateUrl: './app.component.html'
 })
@@ -101,7 +106,7 @@ export class AppComponent {}
 
 ```typescript
 import { Component } from '@angular/core';
-import { DropdownOption } from '@ithouse/ngx-dropdown';
+import { DropdownOption } from '@ithouse-bd/ngx-dropdown';
 
 @Component({
   selector: 'app-root',
@@ -521,7 +526,6 @@ import { Component, signal, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-customer-form',
-  standalone: true,
   imports: [ReactiveFormsModule, DropdownComponent],
   template: `
     <form [formGroup]="form">

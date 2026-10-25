@@ -17,8 +17,8 @@
     "paths": {
       "@tailwind-bootstrap/ui-components": ["libs/ui-components/src/index.ts"],
       "@tailwind-bootstrap/tailwind-styles": ["libs/tailwind-styles/src/index.ts"],
-      "@ithouse/ngx-dropdown": ["libs/ngx-dropdown/src/index.ts"],
-      "@ithouse/dropdown": ["libs/ngx-dropdown/src/index.ts"]
+      "@ithouse-bd/ngx-dropdown": ["libs/ngx-dropdown/src/index.ts"],
+      "@ithouse-bd/dropdown": ["libs/ngx-dropdown/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

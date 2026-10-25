@@ -1,28 +1,42 @@
 {
-  "name": "@ithouse/ngx-dropdown",
-  "version": "0.0.1",
-  "description": "Advanced Angular dropdown component with multiselect, search, grouping, pagination and more",
+  "name": "@ithouse-bd/ngx-dropdown",
+  "version": "1.0.0",
+  "description": "Advanced Angular dropdown and multi-select component: search, grouping, pagination, infinite scroll, keyboard navigation, reactive forms and light/dark theming.",
   "keywords": [
     "angular",
+    "angular-component",
     "dropdown",
     "select",
+    "multi-select",
     "multiselect",
+    "combobox",
+    "autocomplete",
+    "searchable-select",
     "ngx",
-    "ithouse",
-    "searchable",
-    "groupable",
-    "pagination"
+    "standalone",
+    "control-value-accessor",
+    "infinite-scroll",
+    "pagination",
+    "ithouse"
   ],
   "author": "iTHouse",
   "license": "MIT",
+  "homepage": "https://github.com/ithouse-bd/angular-libs/tree/main/libs/ngx-dropdown#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ithouse/ngx-dropdown.git"
+    "url": "git+https://github.com/ithouse-bd/angular-libs.git",
+    "directory": "libs/ngx-dropdown"
+  },
+  "bugs": {
+    "url": "https://github.com/ithouse-bd/angular-libs/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "peerDependencies": {
-    "@angular/common": "^17.0.0 || ^18.0.0 || ^19.0.0 || ^20.0.0",
-    "@angular/core": "^17.0.0 || ^18.0.0 || ^19.0.0 || ^20.0.0",
-    "@angular/forms": "^17.0.0 || ^18.0.0 || ^19.0.0 || ^20.0.0"
+    "@angular/common": ">=20.0.0",
+    "@angular/core": ">=20.0.0",
+    "@angular/forms": ">=20.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

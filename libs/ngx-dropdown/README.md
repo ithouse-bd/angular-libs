@@ -1,146 +1,161 @@
-# @ithouse/ngx-dropdown
+# @ithouse-bd/ngx-dropdown
 
-Advanced Angular dropdown/select component with support for multiselect, search, grouping, pagination, infinite scroll, and more. Built to work seamlessly with Bootstrap and can be used alongside other CSS frameworks.
+[![npm version](https://img.shields.io/npm/v/@ithouse-bd/ngx-dropdown.svg)](https://www.npmjs.com/package/@ithouse-bd/ngx-dropdown)
+[![npm downloads](https://img.shields.io/npm/dm/@ithouse-bd/ngx-dropdown.svg)](https://www.npmjs.com/package/@ithouse-bd/ngx-dropdown)
+[![license](https://img.shields.io/npm/l/@ithouse-bd/ngx-dropdown.svg)](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-dropdown/LICENSE)
+[![Angular](https://img.shields.io/badge/Angular-20%2B-dd0031.svg)](https://angular.dev)
+
+A modern, dependency-free dropdown / select component for Angular with multi-select,
+search, grouping, pagination, infinite scroll, full keyboard support and light/dark
+theming. Built on standalone components and signal inputs, and designed to sit
+comfortably next to Bootstrap or Tailwind without style conflicts.
+
+```html
+<ith-dropdown [options]="fruits" placeholder="Select a fruit"></ith-dropdown>
+```
 
 ## Features
 
-- ✅ Single & Multi-select
-- ✅ Searchable/Filterable options
-- ✅ Option grouping
-- ✅ Pagination (prev/next buttons) for large datasets
-- ✅ Infinite scroll (auto load-more on scroll) as an alternative to pagination
-- ✅ Disable individual options
-- ✅ Disable entire dropdown
-- ✅ Select All/Clear All for multiselect
-- ✅ Clearable selections
-- ✅ Customizable placeholder
-- ✅ Keyboard navigation (Arrow keys, Home/End, Enter, Space, Escape)
-- ✅ Server-side pagination & search for API-driven data
-- ✅ FormControl integration (ControlValueAccessor)
-- ✅ Standalone component or NgModule usage
-- ✅ Light/Dark/Auto theming via CSS variables
-- ✅ Works with Bootstrap and other CSS frameworks
+- **Single & multi-select** with clearable values and select-all / clear-all
+- **Search** across options, with a configurable empty state
+- **Grouping** by any option property
+- **Pagination** (prev/next) or **infinite scroll** (`loadMore`) for long lists
+- **Server-side mode** for API-driven data (external paging, search and loading state)
+- **Keyboard navigation** and ARIA wiring — arrows, Home/End, Enter/Space, Escape
+- **Reactive & template-driven forms** through `ControlValueAccessor`
+- **Theming** with CSS variables: light, dark and auto
+- **Signal inputs**, standalone component, and an `NgModule` wrapper if you prefer modules
+- **No runtime dependencies** other than `tslib`; no CSS framework required
+
+## Compatibility
+
+| Angular | Supported |
+| --- | --- |
+| 20 and newer (20+) | ✅ |
+| 17, 18, 19 | ❌ not supported |
+| Standalone components | ✅ (the default since Angular 19) |
+| NgModule apps | ✅ (`NgxDropdownModule`) |
+| Zoneless change detection | ✅ |
+| SSR / prerendering | ✅ (no direct DOM access outside the browser) |
 
 ## Installation
 
 ```bash
-npm install @ithouse/ngx-dropdown
+npm install @ithouse-bd/ngx-dropdown
 # or
-yarn add @ithouse/ngx-dropdown
+yarn add @ithouse-bd/ngx-dropdown
 # or
-pnpm add @ithouse/ngx-dropdown
+pnpm add @ithouse-bd/ngx-dropdown
 ```
 
-## Usage
+**Angular 20 or newer is required.** `@angular/common`, `@angular/core` and
+`@angular/forms` are peer dependencies — install them if your app does not already have
+them.
 
-### Import Module
+## Quick start
+
+### Standalone (recommended)
 
 ```typescript
-import { NgxDropdownModule } from '@ithouse/ngx-dropdown';
+import { Component } from '@angular/core';
+import {
+  DropdownChangeEvent,
+  DropdownComponent,
+  DropdownOption,
+} from '@ithouse-bd/ngx-dropdown';
+
+@Component({
+  selector: 'app-demo',
+  imports: [DropdownComponent],
+  template: `
+    <ith-dropdown
+      [options]="fruits"
+      placeholder="Select a fruit"
+      (selectionChange)="onSelection($event)">
+    </ith-dropdown>
+  `,
+})
+export class DemoComponent {
+  fruits: DropdownOption[] = [
+    { value: 'apple', label: 'Apple' },
+    { value: 'banana', label: 'Banana' },
+    { value: 'orange', label: 'Orange' },
+  ];
+
+  onSelection(event: DropdownChangeEvent) {
+    console.log(event.value, event.selectedItems);
+  }
+}
+```
+
+### With an NgModule
+
+```typescript
+import { NgxDropdownModule } from '@ithouse-bd/ngx-dropdown';
 
 @NgModule({
-  imports: [NgxDropdownModule]
+  imports: [NgxDropdownModule],
 })
 export class AppModule {}
 ```
 
-Or use the standalone component directly:
+## Usage
 
-```typescript
-import { DropdownComponent } from '@ithouse/ngx-dropdown';
-
-@Component({
-  standalone: true,
-  imports: [DropdownComponent],
-  template: `<ith-dropdown [options]="options"></ith-dropdown>`
-})
-export class MyComponent {}
-```
-
-### Basic Usage
+### Multi-select
 
 ```html
-<ith-dropdown 
-  [options]="options" 
-  placeholder="Select an option"
-  (selectionChange)="onSelectionChange($event)">
-</ith-dropdown>
-```
-
-```typescript
-options = [
-  { value: 1, label: 'Option 1' },
-  { value: 2, label: 'Option 2' },
-  { value: 3, label: 'Option 3' }
-];
-```
-
-### Multiselect
-
-```html
-<ith-dropdown 
-  [options]="options" 
+<ith-dropdown
+  [options]="countries"
   [multiple]="true"
-  placeholder="Select multiple options">
+  [searchable]="true"
+  placeholder="Select countries">
 </ith-dropdown>
 ```
 
 ### Searchable
 
 ```html
-<ith-dropdown 
-  [options]="options" 
+<ith-dropdown
+  [options]="options"
   [searchable]="true"
-  searchPlaceholder="Type to search...">
+  searchPlaceholder="Type to search..."
+  noOptionsText="Nothing matches your search">
 </ith-dropdown>
 ```
 
-### Grouped Options
+### Grouped options
 
 ```html
-<ith-dropdown 
-  [options]="groupedOptions" 
-  groupBy="group"
-  placeholder="Select from groups">
-</ith-dropdown>
+<ith-dropdown [options]="cities" groupBy="group" placeholder="Select a city"></ith-dropdown>
 ```
 
 ```typescript
-groupedOptions = [
-  { value: 1, label: 'Apple', group: 'Fruits' },
-  { value: 2, label: 'Banana', group: 'Fruits' },
-  { value: 3, label: 'Carrot', group: 'Vegetables' },
+cities = [
+  { value: 'ny', label: 'New York', group: 'USA' },
+  { value: 'la', label: 'Los Angeles', group: 'USA' },
+  { value: 'london', label: 'London', group: 'UK' },
 ];
 ```
 
-### With Pagination (prev/next buttons)
+### Pagination (prev/next buttons)
 
 ```html
-<ith-dropdown 
-  [options]="largeOptionsList" 
-  [pageable]="true"
-  [pageSize]="10">
-</ith-dropdown>
+<ith-dropdown [options]="items" [pageable]="true" [pageSize]="10"></ith-dropdown>
 ```
 
-### With Infinite Scroll (auto load on scroll)
+### Infinite scroll
 
-Instead of pagination buttons, reveal options as the user scrolls to the bottom of the list:
+Client-side — options are revealed chunk by chunk as the list is scrolled:
 
 ```html
-<!-- Client-side: options are sliced locally and grown on scroll -->
-<ith-dropdown 
-  [options]="largeOptionsList" 
-  [infiniteScroll]="true"
-  [pageSize]="20"
-  [searchable]="true">
-</ith-dropdown>
+<ith-dropdown [options]="items" [infiniteScroll]="true" [pageSize]="20"></ith-dropdown>
 ```
 
+Server-side — the component asks for more data through `loadMore`:
+
 ```html
-<!-- Server-side: emits (loadMore) so you can append the next page from your API -->
-<ith-dropdown 
-  [options]="loadedOptions()"
+<ith-dropdown
+  [options]="options()"
   [infiniteScroll]="true"
   [serverSide]="true"
   [loading]="isLoading()"
@@ -152,85 +167,168 @@ Instead of pagination buttons, reveal options as the user scrolls to the bottom 
 </ith-dropdown>
 ```
 
-> **Note:** `infiniteScroll` takes precedence over `pageable` when enabled. A "Load more…" button is also rendered as a fallback for keyboard/touch users.
+> `infiniteScroll` takes precedence over `pageable` when both are enabled. A
+> "Load more…" button is also rendered as a fallback for keyboard and touch users.
 
-### Keyboard Navigation
+### Custom field names
 
-| Key | Closed dropdown | Open dropdown |
-|---|---|---|
-| `ArrowDown` | Opens (highlights first option) | Move to next option |
-| `ArrowUp` | Opens (highlights last option) | Move to previous option |
-| `Home` / `End` | — | Jump to first / last option |
-| `Enter` / `Space` | Opens | Select highlighted option |
-| `Escape` | — | Close dropdown |
+```html
+<ith-dropdown [options]="users" bindLabel="fullName" bindValue="id"></ith-dropdown>
+```
 
-Disabled options are skipped during navigation.
+### Two-way binding
 
-### Disabled Options
+`value` is a model input, so it supports the banana-in-a-box syntax:
+
+```html
+<ith-dropdown [options]="fruits" [(value)]="selectedFruit"></ith-dropdown>
+```
+
+### Reactive forms
+
+```typescript
+import { FormControl } from '@angular/forms';
+
+myControl = new FormControl<string | null>(null);
+```
+
+```html
+<ith-dropdown [options]="fruits" [formControl]="myControl"></ith-dropdown>
+```
+
+### Disabled options
 
 ```typescript
 options = [
   { value: 1, label: 'Available' },
   { value: 2, label: 'Disabled', disabled: true },
-  { value: 3, label: 'Also Available' },
+  { value: 3, label: 'Also available' },
 ];
-```
-
-### With Reactive Forms
-
-```typescript
-import { FormControl } from '@angular/forms';
-
-myControl = new FormControl();
-```
-
-```html
-<ith-dropdown [options]="options" [formControl]="myControl"></ith-dropdown>
 ```
 
 ## API
 
 ### Inputs
 
+All inputs are Angular signal inputs.
+
 | Input | Type | Default | Description |
-|---|---|---|---|
-| options | DropdownOption[] | [] | Array of options to display |
-| placeholder | string | 'Select...' | Placeholder text |
-| multiple | boolean | false | Enable multiselect |
-| searchable | boolean | true | Enable search functionality |
-| disabled | boolean | false | Disable the dropdown |
-| clearable | boolean | true | Show clear (×) button when a value is selected |
-| closeOnSelect | boolean | true | Close dropdown after selection (single select) |
-| showSelectAll | boolean | true | Show Select All/Clear All in multiselect mode |
-| maxHeight | string | '250px' | Max height of the options list |
-| searchPlaceholder | string | 'Search...' | Search input placeholder |
-| noOptionsText | string | 'No options found' | Text when filter yields nothing |
-| bindLabel | string | undefined | Option property to display (falls back to label/name/text/title) |
-| bindValue | string | undefined | Option property used as the value (falls back to `value`, else whole object) |
-| groupBy | string | undefined | Property name to group by |
-| pageable | boolean | false | Enable prev/next pagination |
-| pageSize | number | 10 | Items per page / per scroll chunk |
-| infiniteScroll | boolean | false | Auto load-more on scroll (takes precedence over `pageable`) |
-| hasMore | boolean | true | (Server-side infinite scroll) whether more pages exist |
-| serverSide | boolean | false | Disable local filtering/slicing; consumer supplies current page |
-| totalItems | number | 0 | Total item count for server-side pagination UI |
-| loading | boolean | false | Show loading state |
-| loadingText | string | 'Loading...' | Text shown during loading |
+| --- | --- | --- | --- |
+| `options` | `DropdownOption[]` | `[]` | Options to display |
+| `value` | `any \| any[] \| null` | `null` | Selected value(s); two-way bindable |
+| `placeholder` | `string` | `'Select...'` | Placeholder text |
+| `multiple` | `boolean` | `false` | Enable multi-select |
+| `searchable` | `boolean` | `true` | Enable the search field |
+| `disabled` | `boolean` | `false` | Disable the whole control |
+| `clearable` | `boolean` | `true` | Show the clear (×) button |
+| `closeOnSelect` | `boolean` | `true` | Close after selecting (single select) |
+| `showSelectAll` | `boolean` | `true` | Show select-all / clear-all in multi-select |
+| `maxHeight` | `string` | `'250px'` | Max height of the options list |
+| `searchPlaceholder` | `string` | `'Search...'` | Search field placeholder |
+| `noOptionsText` | `string` | `'No options found'` | Text shown when the filter matches nothing |
+| `bindLabel` | `string \| undefined` | `undefined` | Property used for the label (falls back to `label`/`name`/`text`/`title`) |
+| `bindValue` | `string \| undefined` | `undefined` | Property used as the value (falls back to `value`, else the whole object) |
+| `groupBy` | `string \| undefined` | `undefined` | Property to group options by |
+| `pageable` | `boolean` | `false` | Enable prev/next pagination |
+| `pageSize` | `number` | `10` | Items per page / per scroll chunk |
+| `infiniteScroll` | `boolean` | `false` | Reveal options on scroll (takes precedence over `pageable`) |
+| `hasMore` | `boolean` | `true` | Server-side infinite scroll: whether more pages exist |
+| `serverSide` | `boolean` | `false` | Disable local filtering/slicing; the consumer supplies the current page |
+| `totalItems` | `number` | `0` | Total item count for the server-side pagination UI |
+| `loading` | `boolean` | `false` | Show the loading state |
+| `loadingText` | `string` | `'Loading...'` | Text shown while loading |
 
 ### Outputs
 
 | Output | Type | Description |
-|---|---|---|
-| selectionChange | EventEmitter<DropdownChangeEvent> | Emitted when selection changes |
-| searchChange | EventEmitter<string> | Emitted when search term changes |
-| openChange | EventEmitter<boolean> | Emitted when dropdown opens/closes |
-| pageChange | EventEmitter<number> | Emitted when page changes (button pagination / server-side search) |
-| loadMore | EventEmitter<void> | Emitted (server-side infinite scroll) when more data should be fetched |
+| --- | --- | --- |
+| `selectionChange` | `DropdownChangeEvent` | Emitted when the selection changes |
+| `valueChange` | `any \| any[] \| null` | Emitted with the new value (enables `[(value)]`) |
+| `searchChange` | `string` | Emitted when the search term changes |
+| `openChange` | `boolean` | Emitted when the dropdown opens or closes |
+| `pageChange` | `number` | Emitted when the page changes |
+| `loadMore` | `void` | Emitted (server-side infinite scroll) when more data should be fetched |
+
+### Types
+
+```typescript
+interface DropdownOption {
+  value: any;
+  label: string;
+  disabled?: boolean;
+  group?: string;
+  [key: string]: any;
+}
+
+interface DropdownChangeEvent {
+  value: any | any[];
+  selectedItems: DropdownOption | DropdownOption[] | null;
+}
+```
+
+### Keyboard navigation
+
+| Key | Dropdown closed | Dropdown open |
+| --- | --- | --- |
+| `ArrowDown` | Opens, highlighting the first option | Move to the next option |
+| `ArrowUp` | Opens, highlighting the last option | Move to the previous option |
+| `Home` / `End` | — | Jump to the first / last option |
+| `Enter` / `Space` | Opens | Select the highlighted option |
+| `Escape` | — | Close the dropdown |
+
+Disabled options are skipped while navigating.
+
+## Theming
+
+The component exposes its colours as CSS custom properties and responds to a
+`data-theme` attribute on the root element:
+
+```html
+<html data-theme="dark">
+<!-- or data-theme="light" / data-theme="auto" -->
+```
+
+```css
+ith-dropdown {
+  --ith-bg: #ffffff;
+  --ith-border: #ced4da;
+  --ith-text: #212529;
+  --ith-primary: #0d6efd;
+}
+```
+
+A complete variable reference, custom theme recipes and integration examples for
+Bootstrap and Tailwind live in
+[THEMING.md](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-dropdown/THEMING.md).
 
 ## Styling
 
-The component comes with default styles. It uses CSS classes with `ith-` prefix and CSS variables for theming. See [THEMING.md](./THEMING.md) for details. The component is designed to work well alongside Bootstrap — no style conflicts.
+Default styles ship with the component (class names are prefixed with `ith-`), so it
+works out of the box next to Bootstrap, Tailwind or a plain stylesheet. No global CSS
+import is required.
+
+## Screenshots
+
+The documentation gallery (basic, multi-select, grouped, paginated, server-side,
+infinite scroll and light/dark comparison) is available in
+[docs/images](https://github.com/ithouse-bd/angular-libs/tree/main/libs/ngx-dropdown/docs/images).
+
+## Documentation
+
+- [Full documentation](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-dropdown/DOCUMENTATION.md)
+- [Theming guide](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-dropdown/THEMING.md)
+- [Changelog](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-dropdown/CHANGELOG.md)
+
+## Versioning
+
+This package follows [Semantic Versioning](https://semver.org/). Breaking changes are
+only released in major versions and are listed in the changelog.
+
+## Contributing
+
+Issues and pull requests are welcome at
+[ithouse-bd/angular-libs](https://github.com/ithouse-bd/angular-libs/issues).
 
 ## License
 
-MIT
+[MIT](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-dropdown/LICENSE) © iTHouse

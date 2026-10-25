@@ -2,11 +2,10 @@ import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { ThemeInitializer } from './theme-initializer.service';
 
-import { DropdownOption, DropdownComponent } from '@ithouse/ngx-dropdown';
+import { DropdownOption, DropdownComponent } from '@ithouse-bd/ngx-dropdown';
 import { UiComponentsModule } from '@tailwind-bootstrap/ui-components';
 @Component({
   selector: 'app-root',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, DropdownComponent, UiComponentsModule],
   templateUrl: './app.component.html',
