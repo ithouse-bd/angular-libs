@@ -1,6 +1,6 @@
 {
   "name": "@ithouse-bd/ngx-dropdown",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Advanced Angular dropdown and multi-select component: search, grouping, pagination, infinite scroll, keyboard navigation, reactive forms and light/dark theming.",
   "keywords": [
     "angular",
