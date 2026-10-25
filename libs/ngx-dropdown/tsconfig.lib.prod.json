@@ -4,5 +4,8 @@
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true
+  },
+  "angularCompilerOptions": {
+    "compilationMode": "partial"
   }
 }

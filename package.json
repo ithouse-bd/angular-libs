@@ -5,10 +5,14 @@
   "scripts": {
     "start": "nx serve",
     "build": "nx build",
+    "build:demo": "nx build demo-app --configuration=production",
     "test": "nx test",
     "ng": "npx ng"
   },
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@angular/animations": "^20.0.0",
     "@angular/common": "^20.0.0",

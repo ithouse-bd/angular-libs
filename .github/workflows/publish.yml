@@ -1,0 +1,86 @@
+name: Publish
+
+# Publishes @ithouse-bd/ngx-dropdown to npm when a version tag (v1.2.3) is pushed.
+# Authentication uses npm Trusted Publishing (OIDC) — no NPM_TOKEN secret is stored.
+# See PUBLISHING.md at the repository root for the one-time setup.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # create the GitHub release
+  id-token: write # OIDC token for npm trusted publishing + provenance
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # Trusted publishing needs npm >= 11.5.1
+      - name: Upgrade npm
+        run: npm install -g npm@11
+
+      - name: Show tool versions
+        run: node --version && npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build library
+        run: npx nx build ngx-dropdown --skip-nx-cache
+
+      - name: Verify tag matches package version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./dist/libs/ngx-dropdown/package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "tag=$TAG_VERSION package=$PACKAGE_VERSION"
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match version ${PACKAGE_VERSION} in libs/ngx-dropdown/package.json"
+            exit 1
+          fi
+
+      - name: Verify package contents
+        run: |
+          cd dist/libs/ngx-dropdown
+          npm pack --dry-run --json > /tmp/pack.json
+          node -e "
+            const tarball = require('/tmp/pack.json')[0];
+            const files = tarball.files.map((f) => f.path);
+            const required = ['package.json', 'README.md', 'LICENSE', 'index.d.ts'];
+            const missing = required.filter((f) => !files.includes(f));
+            if (missing.length) {
+              console.error('Missing files in package: ' + missing.join(', '));
+              process.exit(1);
+            }
+            console.log('Package: ' + tarball.name + '@' + tarball.version);
+            console.log('Files: ' + tarball.entryCount + ', unpacked size: ' + tarball.unpackedSize + ' bytes');
+          "
+
+      - name: Publish to npm
+        # No NODE_AUTH_TOKEN on purpose: npm exchanges the GitHub OIDC token for a
+        # short-lived publish token and attaches a provenance statement automatically.
+        run: npm publish ./dist/libs/ngx-dropdown --access public
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "@ithouse-bd/ngx-dropdown ${GITHUB_REF_NAME}" \
+            --generate-notes \
+            "./dist/libs/ngx-dropdown/package.json#package.json"

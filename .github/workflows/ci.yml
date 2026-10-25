@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build library
+        run: npx nx build ngx-dropdown --skip-nx-cache
+
+      # Same configuration Vercel uses for the live demo
+      - name: Build demo app
+        run: npx nx build demo-app --configuration=production --skip-nx-cache
+
+      - name: Verify package contents
+        run: |
+          cd dist/libs/ngx-dropdown
+          npm pack --dry-run --json > /tmp/pack.json
+          node -e "
+            const tarball = require('/tmp/pack.json')[0];
+            const files = tarball.files.map((f) => f.path);
+            const required = ['package.json', 'README.md', 'LICENSE', 'index.d.ts'];
+            const missing = required.filter((f) => !files.includes(f));
+            if (missing.length) {
+              console.error('Missing files in package: ' + missing.join(', '));
+              process.exit(1);
+            }
+            console.log('Package: ' + tarball.name + '@' + tarball.version + ' (' + tarball.entryCount + ' files)');
+          "
