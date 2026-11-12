@@ -1,0 +1,259 @@
+<div
+  class="ith-cascader"
+  [class.ith-cascader-open]="isOpen()"
+  [class.ith-cascader-disabled]="isDisabled()"
+  [class.ith-cascader-has-clear]="showClear()">
+  <!-- Trigger -->
+  <div class="ith-cascader-control">
+    <button
+      #trigger
+      type="button"
+      class="ith-cascader-trigger"
+      role="combobox"
+      [attr.aria-expanded]="isOpen()"
+      [attr.aria-controls]="isOpen() ? panelId : null"
+      aria-haspopup="listbox"
+      [attr.aria-label]="ariaLabel()"
+      [attr.aria-disabled]="isDisabled()"
+      [disabled]="isDisabled()"
+      (click)="toggle()"
+      (keydown)="onTriggerKeydown($event)">
+      @if (hasValue()) {
+        <span class="ith-cascader-value">
+          @for (node of selectedPath(); track $index; let last = $last) {
+            <span class="ith-cascader-crumb">{{ labelOf(node) }}</span>
+            @if (!last) {
+              <svg
+                class="ith-cascader-separator"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            }
+          }
+        </span>
+      } @else {
+        <span class="ith-cascader-placeholder">{{ placeholderText() }}</span>
+      }
+
+      @if (isResolvingValue()) {
+        <span class="ith-cascader-spinner" aria-hidden="true"></span>
+      }
+
+      <span class="ith-cascader-chevron" [class.is-open]="isOpen()" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </span>
+    </button>
+
+    @if (showClear()) {
+      <button
+        type="button"
+        class="ith-cascader-clear"
+        (click)="clear($event)"
+        aria-label="Clear selection">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
+    }
+  </div>
+
+  <!-- Panel -->
+  @if (isOpen()) {
+    <div class="ith-cascader-panel" [attr.id]="panelId" (keydown)="onPanelKeydown($event)">
+      @if (searchable()) {
+        <div class="ith-cascader-search">
+          <svg
+            class="ith-cascader-search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.6-3.6" />
+          </svg>
+          <input
+            #searchInput
+            type="text"
+            class="ith-cascader-search-input"
+            autocomplete="off"
+            [value]="searchTerm()"
+            [attr.placeholder]="searchPlaceholder()"
+            [attr.aria-label]="searchPlaceholder()"
+            (input)="onSearchInput($any($event.target).value)" />
+          @if (searchTerm()) {
+            <button
+              type="button"
+              class="ith-cascader-search-clear"
+              (click)="onSearchInput('')"
+              aria-label="Clear search">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          }
+        </div>
+      }
+
+      @if (!isSearching()) {
+        <div class="ith-cascader-breadcrumb">
+          @if (drillPath().length) {
+            <button
+              type="button"
+              class="ith-cascader-back"
+              (click)="goBack()"
+              aria-label="Back one level">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+          }
+
+          <button
+            type="button"
+            class="ith-cascader-crumb-btn"
+            [class.is-current]="drillPath().length === 0"
+            (click)="goToLevel(0)">
+            {{ rootLabel() }}
+          </button>
+
+          @for (node of drillPath(); track $index; let i = $index) {
+            <svg
+              class="ith-cascader-separator"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+            <button
+              type="button"
+              class="ith-cascader-crumb-btn"
+              [class.is-current]="i === drillPath().length - 1"
+              (click)="goToLevel(i + 1)">
+              {{ labelOf(node) }}
+            </button>
+          }
+
+          @if (drillPath().length && currentLevelPlaceholder()) {
+            <span class="ith-cascader-level-hint">{{ currentLevelPlaceholder() }}</span>
+          }
+        </div>
+      }
+
+      <ul
+        #listBox
+        class="ith-cascader-list"
+        role="listbox"
+        [attr.id]="listId"
+        [attr.aria-activedescendant]="activeOptionId()"
+        [attr.tabindex]="searchable() ? -1 : 0"
+        [style.maxHeight]="maxHeight()">
+        @if (searchLoading()) {
+          <li class="ith-cascader-empty ith-cascader-loading">
+            <span class="ith-cascader-spinner" aria-hidden="true"></span>
+            <span>{{ searchingText() }}</span>
+          </li>
+        } @else if (searchError(); as searchFailure) {
+          <li class="ith-cascader-empty ith-cascader-error">
+            <span>{{ searchErrorText() }}</span>
+            @if (searchFailure !== searchErrorText()) {
+              <span class="ith-cascader-error-detail">{{ searchFailure }}</span>
+            }
+            <button type="button" class="ith-cascader-retry" (click)="retrySearch()">
+              {{ retryText() }}
+            </button>
+          </li>
+        } @else if (isLoading()) {
+          <li class="ith-cascader-empty ith-cascader-loading">
+            <span class="ith-cascader-spinner" aria-hidden="true"></span>
+            <span>{{ loadingText() }}</span>
+          </li>
+        } @else if (loadError(); as error) {
+          <li class="ith-cascader-empty ith-cascader-error">
+            <span>{{ loadErrorText() }}</span>
+            @if (error !== loadErrorText()) {
+              <span class="ith-cascader-error-detail">{{ error }}</span>
+            }
+            <button type="button" class="ith-cascader-retry" (click)="retryLoad()">
+              {{ retryText() }}
+            </button>
+          </li>
+        } @else {
+          @for (item of visibleItems(); track $index; let i = $index) {
+            <li
+              role="option"
+              class="ith-cascader-option"
+              [id]="optionId(i)"
+              [class.is-active]="isActive(i)"
+              [class.is-selected]="isSelected(item.option)"
+              [class.is-disabled]="item.option.disabled"
+              [attr.aria-selected]="isSelected(item.option)"
+              [attr.aria-disabled]="item.option.disabled ? true : null"
+              (click)="onItemClick(item)"
+              (mouseenter)="setActiveIndex(i, item.option)">
+              <span class="ith-cascader-option-main">
+                <span class="ith-cascader-option-label">{{ labelOf(item.option) }}</span>
+                @if (isSearching() && pathLabelOf(item)) {
+                  <span class="ith-cascader-option-path">{{ pathLabelOf(item) }}</span>
+                }
+              </span>
+
+              @if (canExpand(item.option, item.path)) {
+                <svg
+                  class="ith-cascader-option-chevron"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              } @else if (isSelected(item.option)) {
+                <svg
+                  class="ith-cascader-check"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true">
+                  <path d="m5 13 4 4L19 7" />
+                </svg>
+              }
+            </li>
+          } @empty {
+            <li class="ith-cascader-empty">{{ noOptionsText() }}</li>
+          }
+        }
+      </ul>
+    </div>
+  }
+</div>
