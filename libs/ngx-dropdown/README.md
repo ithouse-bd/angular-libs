@@ -6,9 +6,10 @@
 [![Angular](https://img.shields.io/badge/Angular-20%2B-dd0031.svg)](https://angular.dev)
 
 A modern, dependency-free dropdown / select component for Angular with multi-select,
-search, grouping, pagination, infinite scroll, full keyboard support and light/dark
-theming. Built on standalone components and signal inputs, and designed to sit
-comfortably next to Bootstrap or Tailwind without style conflicts.
+search, grouping, pagination, infinite scroll, a **cascading (dependent) select** for
+hierarchical data, full keyboard support and light/dark theming. Built on standalone
+components and signal inputs, and designed to sit comfortably next to Bootstrap or Tailwind
+without style conflicts.
 
 ```html
 <ith-dropdown [options]="fruits" placeholder="Select a fruit"></ith-dropdown>
@@ -19,6 +20,8 @@ comfortably next to Bootstrap or Tailwind without style conflicts.
 - **Single & multi-select** with clearable values and select-all / clear-all
 - **Search** across options, with a configurable empty state
 - **Grouping** by any option property
+- **Cascading select** (`<ith-cascader>`) for dependent data — division → district →
+  sub-district, category → sub-category — with breadcrumbs, tree search and keyboard drill-down
 - **Pagination** (prev/next) or **infinite scroll** (`loadMore`) for long lists
 - **Server-side mode** for API-driven data (external paging, search and loading state)
 - **Keyboard navigation** and ARIA wiring — arrows, Home/End, Enter/Space, Escape
@@ -122,6 +125,112 @@ export class AppModule {}
   noOptionsText="Nothing matches your search">
 </ith-dropdown>
 ```
+
+### Cascading (dependent) select
+
+Nest options with `children` and use `<ith-cascader>`. Intermediate nodes open the next
+level; leaves select a value. A breadcrumb shows the current path and search spans the
+whole tree.
+
+```typescript
+import { CascaderOption } from '@ithouse-bd/ngx-dropdown';
+
+areas: CascaderOption[] = [
+  {
+    value: 'barishal',
+    label: 'Barishal',
+    children: [
+      {
+        value: 'barguna',
+        label: 'Barguna',
+        children: [
+          { value: 'amtali', label: 'Amtali' },
+          { value: 'barguna-sadar', label: 'Barguna Sadar' },
+        ],
+      },
+    ],
+  },
+];
+```
+
+```html
+<ith-cascader
+  [options]="areas"
+  placeholder="Select delivery area"
+  [(value)]="area"
+  (selectionChange)="onAreaChange($event)">
+</ith-cascader>
+```
+
+```typescript
+onAreaChange(event: CascaderChangeEvent) {
+  // event.value = 'barguna-sadar'
+  // event.path  = [Barishal, Barguna, Barguna Sadar]
+}
+```
+
+#### API-driven (lazy) levels
+
+Ship only the first level and fetch each child level on demand. `loadChildren` may return a
+`Promise` or an RxJS observable (e.g. `HttpClient`); results are cached per node, and the
+panel shows a spinner, an inline error and a retry button automatically.
+
+```typescript
+readonly divisions: CascaderOption[] = [
+  { value: 'barishal', label: 'Barishal' },
+  { value: 'dhaka', label: 'Dhaka' },
+];
+
+readonly levelPlaceholders = ['Select Division', 'Select District', 'Select Sub-district'];
+
+readonly loadChildren = (node: CascaderOption) =>
+  this.http.get<CascaderOption[]>(`/api/areas/${node.value}/children`);
+```
+
+```html
+<ith-cascader
+  [options]="divisions"
+  [loadChildren]="loadChildren"
+  [levelPlaceholders]="levelPlaceholders"
+  [(value)]="area">
+</ith-cascader>
+```
+
+- `levelPlaceholders[0]` is the closed control's placeholder; the current level's entry is
+  shown as a hint above the list while drilling (the last entry is reused for deeper levels).
+- Set `isLeaf: true` on a node that has no children so it renders no chevron and is selectable.
+- Search covers every level that has been loaded (fetched branches are cached).
+- `retryLoad()` re-runs a failed request; `refresh(node?)` clears the cache (all levels when
+  called without a node) and reloads the open level.
+- **Edit forms:** bind an existing value and add `resolveValue` so the breadcrumb can be
+  hydrated before that branch is loaded:
+  `(id) => this.http.get<CascaderOption[]>(`/areas/${id}/path`)`.
+- `value` can be any type your API uses (string, number, or an object with `bindValue`);
+  `selectionChange` fires only for user picks, so external `setValue`/`patchValue` just
+  re-renders the control.
+- **Server-side search:** provide `searchFn` and typing queries your API after
+  `searchDebounce` ms (default 300). Each hit must be `{ option, path }`, so the whole tree is
+  searchable without loading it:
+
+```typescript
+readonly searchAreas = (term: string) =>
+  this.http.get<CascaderSearchResult[]>(`/api/areas/search?q=${encodeURIComponent(term)}`);
+```
+
+```html
+<ith-cascader [options]="divisions" [loadChildren]="loadChildren"
+              [searchFn]="searchAreas"></ith-cascader>
+```
+
+Invalid responses are ignored (stale requests never overwrite newer hits), and failures show
+`searchErrorText` with a retry button.
+
+Cascader inputs: `options`, `placeholder`, `levelPlaceholders`, `loadChildren`, `resolveValue`,
+`searchable`,
+`disabled`, `clearable`, `changeOnSelect`, `closeOnSelect`, `maxHeight`, `searchPlaceholder`,
+`noOptionsText`, `loadingText`, `loadErrorText`, `retryText`, `rootLabel`, `pathSeparator`,
+`bindLabel`, `bindValue`, `bindChildren`, `ariaLabel`.
+Outputs: `valueChange`, `selectionChange`, `openChange`, `searchChange`.
 
 ### Grouped options
 

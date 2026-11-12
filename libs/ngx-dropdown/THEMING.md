@@ -87,9 +87,10 @@ All themeable properties are defined on the `.ith-dropdown` class. Override them
 | `--ith-border-focus` | Border color when focused/open | `#86b7fe` | `#4dabf7` |
 | `--ith-shadow-focus` | Focus ring shadow | `rgba(13, 110, 253, 0.25)` | `rgba(77, 171, 247, 0.25)` |
 | `--ith-hover-bg` | Background on hover | `#f8f9fa` | `#2d2d2d` |
-| `--ith-selected-bg` | Background for selected items | `#e7f1ff` | `#1a365d` |
-| `--ith-selected-text` | Text color for selected items | `#0d6efd` | `#63b3ed` |
-| `--ith-selected-hover-bg` | Background for selected items on hover | `#d0e3ff` | `#2a4365` |
+| `--ith-selected-bg` | Background for selected items | `#e8f0fe` | `#1c2f4d` |
+| `--ith-selected-text` | Text color for selected items | `#0b5ed7` | `#8ec1ff` |
+| `--ith-selected-hover-bg` | Legacy hover fill (the ring below is used now) | `#dfeaff` | `#223a5e` |
+| `--ith-selected-ring` | Inset ring for a selected row on hover/keyboard focus | `rgba(13, 110, 253, 0.28)` | `rgba(142, 193, 255, 0.32)` |
 
 ### Panel & Groups
 
@@ -275,5 +276,30 @@ The dropdown is designed to work alongside other UI libraries. Since it uses iso
   --ith-placeholder: #737373;
 }
 ```
+
+### Cascader accent (indigo)
+
+`<ith-cascader>` reads the same token names but ships its own, more neutral defaults with an
+indigo accent. Override them on `.ith-cascader`:
+
+```css
+.ith-cascader {
+  --ith-border-focus: #0d9488;
+  --ith-shadow-focus: rgba(13, 148, 136, 0.16);
+  --ith-selected-bg: #ecfdf5;
+  --ith-selected-text: #0f766e;
+}
+```
+
+Two extra tokens are used only by the cascader:
+
+| Variable | Description | Light | Dark |
+|----------|-------------|-------|------|
+| `--ith-surface-alt` | Panel header, search field, selected chrome | `#f8f9fb` | `#1d1f25` |
+| `--ith-border-strong` | Hover border and scrollbar thumb | `#d3d8df` | `#3a3e48` |
+| `--ith-selected-ring` | Inset ring for a selected row on hover/keyboard focus | `rgba(79, 70, 229, 0.3)` | `rgba(174, 188, 255, 0.35)` |
+
+`--ith-radius` controls the trigger/panel corner radius (`0.625rem` by default) and
+`--ith-radius-sm` the option rows (`0.5rem`).
 
 Need help with theming? Check out our [Documentation](./DOCUMENTATION.md) or open an issue on GitHub.

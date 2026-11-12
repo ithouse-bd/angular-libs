@@ -118,6 +118,64 @@
     </ith-table>
   </section>
 
+  <!-- Cascading select -->
+  <section class="mb-5">
+    <h2 class="mb-3">Cascading select (dependent dropdown)</h2>
+    <p class="text-muted small">
+      Division → District → Sub-district, any depth. Only the divisions ship with the page —
+      each child level is fetched with a simulated 600&nbsp;ms API call, cached, and shown with
+      its own placeholder (“Select District”, “Select Sub-district”). Typing searches the whole
+      tree on the server (300&nbsp;ms debounce + simulated 400&nbsp;ms request), so levels never
+      have to be loaded first.
+    </p>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <label class="form-label">Select Delivery Area <span class="text-danger">*</span></label>
+        <ith-cascader
+          [options]="areaRoots"
+          [loadChildren]="loadAreaChildren"
+          [resolveValue]="resolveAreaValue"
+          [searchFn]="searchAreas"
+          [levelPlaceholders]="areaPlaceholders"
+          loadingText="Loading…"
+          ariaLabel="Select delivery area"
+          [(value)]="deliveryArea"
+          (selectionChange)="onAreaChange($event)">
+        </ith-cascader>
+        <p class="text-muted small mt-2 mb-0">
+          Value: <code>{{ deliveryArea ?? '—' }}</code>
+          @if (areaPath) {
+            · Path: {{ areaPath }}
+          }
+        </p>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary mt-2"
+          (click)="loadSavedArea()">
+          Edit a saved record (Uttara)
+        </button>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Product category</label>
+        <ith-cascader
+          [options]="categories"
+          placeholder="Select category"
+          ariaLabel="Select product category"
+          [(value)]="category"
+          (selectionChange)="onCategoryChange($event)">
+        </ith-cascader>
+        <p class="text-muted small mt-2 mb-0">
+          Value: <code>{{ category ?? '—' }}</code>
+          @if (categoryPath) {
+            · Path: {{ categoryPath }}
+          }
+        </p>
+      </div>
+    </div>
+  </section>
+
   <hr class="my-5" />
 
   <h2 class="mb-4">Dropdown</h2>

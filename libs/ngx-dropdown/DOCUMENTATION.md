@@ -8,6 +8,7 @@ A modern, feature-rich Angular dropdown/select component built for global use wi
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Theming](#theming)
+- [Cascading Select](#cascading-select)
 - [API Reference](#api-reference)
 - [Usage Examples](#usage-examples)
 - [Styling & Customization](#styling--customization)
@@ -22,6 +23,7 @@ A modern, feature-rich Angular dropdown/select component built for global use wi
 | Multi-select | ✅ | Select multiple options with checkboxes |
 | Searchable/Filterable | ✅ | Filter options by typing |
 | Grouped Options | ✅ | Organize options into groups/categories |
+| Cascading Select | ✅ | Hierarchical drill-down (`ith-cascader`) for dependent data |
 | Pagination | ✅ | Handle large datasets with pagination buttons |
 | Infinite Scroll | ✅ | Auto load-more on scroll (client- or server-side) |
 | Keyboard Navigation | ✅ | Full keyboard support (arrows, Home/End, Enter, Escape) |
@@ -187,6 +189,231 @@ export class ThemeService {
   <button (click)="setTheme('auto')">💻 System</button>
 </div>
 ```
+
+## Cascading Select
+
+`<ith-cascader>` picks a path through nested data — division → district → sub-district,
+category → sub-category, country → state → city. It is a separate standalone component in
+the same package, so `<ith-dropdown>` keeps its flat-option API.
+
+```typescript
+import { CascaderChangeEvent, CascaderOption, CascaderComponent } from '@ithouse-bd/ngx-dropdown';
+
+areas: CascaderOption[] = [
+  {
+    value: 'dhaka',
+    label: 'Dhaka',
+    children: [
+      {
+        value: 'gazipur',
+        label: 'Gazipur',
+        children: [
+          { value: 'kaliakair', label: 'Kaliakair' },
+          { value: 'kapasia', label: 'Kapasia' },
+        ],
+      },
+    ],
+  },
+];
+```
+
+```html
+<ith-cascader
+  [options]="areas"
+  placeholder="Select delivery area"
+  [(value)]="area"
+  (selectionChange)="onAreaChange($event)">
+</ith-cascader>
+```
+
+```typescript
+onAreaChange(event: CascaderChangeEvent): void {
+  // event.value = 'kaliakair'
+  // event.option = { value: 'kaliakair', label: 'Kaliakair' }
+  // event.path = [Dhaka, Gazipur, Kaliakair]
+}
+```
+
+### Behaviour
+
+- Clicking a node with `children` drills into the next level; leaf nodes select a value.
+- The panel header shows a breadcrumb (`All › Dhaka › Gazipur`); it is clickable, and the
+  back arrow (or `ArrowLeft` / `Backspace`) goes up one level.
+- Opening the panel when a value is selected starts at the **parent** level, so the user
+  sees the selected node's siblings straight away.
+- `searchable` (default `true`) scans the whole tree and shows the full path under each
+  hit. Choosing a branch from search results drills into it; choosing a leaf selects it.
+- Values are matched by `value` (or `bindValue`); the trigger renders the labels of the
+  resolved path joined by `pathSeparator`.
+- Levels can be static (`children`) **or** fetched on demand with `loadChildren` — see
+  [Async / API-driven levels](#async--api-driven-levels).
+- `disabled: true` on any option greys it out, skips it in keyboard navigation and blocks
+  selection (`aria-disabled` is set). A disabled parent disables its whole branch. The
+  control itself is disabled through `[disabled]` or the bound form control.
+
+### Async / API-driven levels
+
+For large trees (addresses, categories) ship only the first level and fetch children when
+the user drills in. `loadChildren` receives the node and its path, and may return a
+`Promise` or any RxJS-style observable (`HttpClient` works as-is):
+
+```typescript
+readonly divisions: CascaderOption[] = [
+  { value: 'dhaka', label: 'Dhaka' },
+  { value: 'barishal', label: 'Barishal' },
+];
+
+readonly levelPlaceholders = ['Select Division', 'Select District', 'Select Sub-district'];
+
+readonly loadChildren = (node: CascaderOption) =>
+  this.http.get<CascaderOption[]>(`/api/areas/${node.value}/children`);
+```
+
+```html
+<ith-cascader
+  [options]="divisions"
+  [loadChildren]="loadChildren"
+  [levelPlaceholders]="levelPlaceholders"
+  loadingText="Loading areas…"
+  [(value)]="area">
+</ith-cascader>
+```
+
+Notes:
+
+- Results are cached per node, so going back and forth never refetches a level.
+- While a level loads the panel shows a spinner (`loadingText`); a failed request shows
+  `loadErrorText` with a **Retry** button (`retryLoad()`).
+- Mark a node as `isLeaf: true` when it has no children, so it renders without a chevron and
+  can be selected. A node whose loader returns an empty array also becomes selectable.
+- Search runs over the already-loaded tree (static + fetched levels).
+- `refresh(node?)` clears cached children — for one node, or every level when called with
+  no argument — and reloads the open level.
+- Use `changeOnSelect` if intermediate levels are valid values as well.
+- `refresh()` is also the way to pick up server-side changes to a level.
+
+### Server-side search
+
+Without `searchFn`, search walks the options that are loaded. To search the whole tree
+without loading it, provide `searchFn`: typing is debounced (`searchDebounce`, default
+300 ms) and the hits replace the local results.
+
+```typescript
+readonly searchAreas = (term: string) =>
+  this.http.get<CascaderSearchResult[]>(
+    `/api/areas/search?q=${encodeURIComponent(term)}`,
+  );
+```
+
+```html
+<ith-cascader
+  [options]="divisions"
+  [loadChildren]="loadChildren"
+  [searchFn]="searchAreas"
+  [searchDebounce]="300"
+  [searchMinLength]="2"
+  searchingText="Searching…"
+  searchErrorText="Search failed">
+</ith-cascader>
+```
+
+- Every hit is `{ option, path }` where `path` is the root→leaf trail. The path is shown
+  under the label and is kept when the hit is selected, so the trigger renders the full
+  breadcrumb; opening the panel then loads that level's siblings on demand.
+- Only the newest term wins: responses that arrive after the term changed are ignored, and
+  the timer is cleared when the panel closes.
+- A failed request shows `searchErrorText` with a **Retry** button that re-runs the query
+  immediately (`retrySearch()`).
+- Local and server search are mutually exclusive — as soon as `searchFn` is set, the local
+  tree walk is skipped.
+
+### Edit mode: existing values
+
+`value` is whatever your API uses — a string, a number, or an object matched through
+`bindValue`. Setting it from outside (`formControl.setValue`, `patchValue`, `[(value)]`)
+re-renders the trigger, and the control keeps the value even if its branch is not loaded.
+
+When that branch is not loaded yet, add `resolveValue` so the control can show the full
+breadcrumb (and open the panel at the right level):
+
+```typescript
+readonly resolveValue = (id: string) =>
+  this.http.get<CascaderOption[]>('/api/areas/' + id + '/path');
+```
+
+```html
+<ith-cascader
+  [options]="divisions"
+  [loadChildren]="loadChildren"
+  [resolveValue]="resolveValue"
+  [formControl]="areaControl">
+</ith-cascader>
+```
+
+Update semantics:
+
+- A user pick replaces the value; deeper levels are naturally invalidated because the new
+  path no longer matches the old one.
+- Picking a value at an intermediate level requires `changeOnSelect`; otherwise only leaves
+  emit a value.
+- `selectionChange` fires only on user picks. External writes update the control silently.
+- If the server data changes, call `refresh()` (optionally with a node) to refetch.
+
+### Cascader inputs
+
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `options` | `CascaderOption[]` | `[]` | Root nodes; children live in `children` |
+| `value` | `any` | `null` | Selected value; two-way bindable |
+| `placeholder` | `string` | `'Select...'` | Text when nothing is selected |
+| `searchable` | `boolean` | `true` | Search across the whole tree |
+| `disabled` | `boolean` | `false` | Disable the control |
+| `clearable` | `boolean` | `true` | Show the clear (×) button |
+| `changeOnSelect` | `boolean` | `false` | Allow selecting nodes that also have children |
+| `closeOnSelect` | `boolean` | `true` | Close after choosing a value |
+| `maxHeight` | `string` | `'300px'` | Max height of the option list |
+| `searchPlaceholder` | `string` | `'Search...'` | Search field placeholder |
+| `noOptionsText` | `string` | `'No options found'` | Text when a level/search is empty |
+| `rootLabel` | `string` | `'All'` | Label of the root breadcrumb |
+| `pathSeparator` | `string` | `' > '` | Separator between levels in the trigger |
+| `bindLabel` | `string` | `undefined` | Property used as the label |
+| `bindValue` | `string` | `undefined` | Property used as the value |
+| `bindChildren` | `string` | `'children'` | Property that holds the child array |
+| `ariaLabel` | `string` | `'Cascading select'` | Accessible name |
+| `loadChildren` | `(node, path) => Promise\|Observable<CascaderOption[]>` | `undefined` | Fetch one level on demand; cached per node |
+| `resolveValue` | `(value) => Promise\|Observable<CascaderOption[]>` | `undefined` | Root→leaf path for an existing value (edit forms) |
+| `searchFn` | `(term) => Promise\|Observable<CascaderSearchResult[]>` | `undefined` | Server-side search; each hit carries `option` + `path` |
+| `searchDebounce` | `number` | `300` | Debounce (ms) before `searchFn` is called |
+| `searchMinLength` | `number` | `1` | Minimum characters before searching |
+| `searchingText` | `string` | `'Searching...'` | Text while the query runs |
+| `searchErrorText` | `string` | `'Search failed'` | Text when the query fails |
+| `levelPlaceholders` | `string[]` | `[]` | Placeholder per depth (`['Select Division', 'Select District', …]`) |
+| `loadingText` | `string` | `'Loading...'` | Text while a level is fetched |
+| `loadErrorText` | `string` | `'Could not load options'` | Text when a level fails to load |
+| `retryText` | `string` | `'Retry'` | Retry button label |
+
+### Cascader outputs
+
+| Output | Payload | Description |
+| --- | --- | --- |
+| `valueChange` | `any` | New value (`[(value)]`) |
+| `selectionChange` | `CascaderChangeEvent` | `{ value, option, path }` — `path` is the full trail |
+| `openChange` | `boolean` | Panel opened / closed |
+| `searchChange` | `string` | Search term changed |
+
+### Keyboard & forms
+
+| Key | Action |
+| --- | --- |
+| `ArrowDown` / `ArrowUp` | Move the highlight (opens when closed) |
+| `ArrowRight` / `Enter` | Drill into the highlighted node, or select a leaf |
+| `ArrowLeft` / `Backspace` | Go up one level (clears the search first) |
+| `Home` / `End` | First / last node |
+| `Escape` | Close |
+
+`<ith-cascader>` implements `ControlValueAccessor`, so `[formControl]` and `ngModel` work
+exactly like `<ith-dropdown>`. It uses the same `--ith-*` CSS variables and `data-theme`
+convention, so one theme configuration covers both components.
 
 ## API Reference
 
