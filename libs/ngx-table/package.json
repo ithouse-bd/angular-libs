@@ -1,0 +1,42 @@
+{
+  "name": "@ithouse-bd/ngx-table",
+  "version": "1.0.0",
+  "description": "Generic, fully themeable Angular data table: sorting, searching, per-column filters, pagination, row selection, row actions, custom cell/header/footer templates and a server-side mode.",
+  "keywords": [
+    "angular",
+    "angular-component",
+    "table",
+    "data-table",
+    "datagrid",
+    "grid",
+    "pagination",
+    "sorting",
+    "filter",
+    "search",
+    "row-selection",
+    "ngx",
+    "standalone",
+    "ithouse"
+  ],
+  "author": "iTHouse",
+  "license": "MIT",
+  "homepage": "https://github.com/ithouse-bd/angular-libs/tree/main/libs/ngx-table#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ithouse-bd/angular-libs.git",
+    "directory": "libs/ngx-table"
+  },
+  "bugs": {
+    "url": "https://github.com/ithouse-bd/angular-libs/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=20.0.0",
+    "@angular/core": ">=20.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}

@@ -1,12 +1,21 @@
-# Publishing `@ithouse-bd/ngx-dropdown`
+# Publishing the libraries
 
-This repository publishes one package to npm: **`@ithouse-bd/ngx-dropdown`**, built from
-[`libs/ngx-dropdown`](libs/ngx-dropdown). Releases are built and published by GitHub
-Actions using **npm Trusted Publishing (OIDC)**, so no npm token is ever stored in the
-repository.
+This repository publishes two independent packages to npm:
 
-- Workflow: [.github/workflows/publish.yml](.github/workflows/publish.yml)
-- CI (build + package check): [.github/workflows/ci.yml](.github/workflows/ci.yml)
+| Package | Source | Release tag | Workflow |
+| --- | --- | --- | --- |
+| `@ithouse-bd/ngx-dropdown` | `libs/ngx-dropdown` | `v1.2.3` | [publish.yml](.github/workflows/publish.yml) |
+| `@ithouse-bd/ngx-table` | `libs/ngx-table` | `ngx-table-v1.2.3` | [publish-table.yml](.github/workflows/publish-table.yml) |
+
+Each package has its own tag prefix and its own workflow, so they are released
+independently — a table release never rebuilds the dropdown and vice versa. Releases are
+built and published by GitHub Actions using **npm Trusted Publishing (OIDC)**, so no npm
+token is ever stored in the repository.
+
+- CI (build + package check for both): [.github/workflows/ci.yml](.github/workflows/ci.yml)
+
+The rest of this document describes `ngx-dropdown`; the table follows the same flow with
+the tag prefix and paths shown above (see [Releasing `ngx-table`](#releasing-ngx-table)).
 
 ---
 
@@ -168,6 +177,47 @@ Open the **Actions** tab → **Publish**. The job:
 6. creates a GitHub release for the tag
 
 ---
+
+## Releasing `ngx-table`
+
+Same flow with a different tag prefix, so the two pipelines can never collide.
+
+### One-time setup (first version only)
+
+npm can only register a trusted publisher for a package that already exists, so publish
+version `1.0.0` once from your machine:
+
+```bash
+npx nx build ngx-table
+npm publish ./dist/libs/ngx-table --access public   # asks for your 2FA code
+```
+
+Then register the trusted publisher for the **table** package (it is configured per
+package, separately from the dropdown):
+
+1. Open <https://www.npmjs.com/package/@ithouse-bd/ngx-table/access> → **Settings**
+2. **Trusted publishing** → GitHub Actions
+3. Organization/user `ithouse-bd`, repository `angular-libs`, workflow filename
+   **`publish-table.yml`**, environment empty
+
+### Every later release
+
+```bash
+# 1. bump libs/ngx-table/package.json + add a CHANGELOG entry
+git add libs/ngx-table/package.json libs/ngx-table/CHANGELOG.md
+git commit -m "release(ngx-table): v1.1.0"
+
+# 2. tag with the ngx-table- prefix, then push the tag
+git tag ngx-table-v1.1.0
+git push origin main --follow-tags
+```
+
+Pushing the tag starts `publish-table.yml`, which installs, builds `ngx-table`, checks that
+the tag matches `libs/ngx-table/package.json`, verifies the tarball, publishes with OIDC and
+creates a GitHub release.
+
+A tag without the prefix (`v1.1.0`) belongs to the dropdown workflow: it will fail the
+tag ↔ version check and publish nothing, so always use `ngx-table-vX.Y.Z` for the table.
 
 ## What gets published
 
