@@ -1,0 +1,708 @@
+:host {
+  display: block;
+}
+
+/* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/* ------------------------------------------------------------------ */
+
+.ith-table {
+  --ith-table-bg: #ffffff;
+  --ith-table-text: #1f2937;
+  --ith-table-muted: #6b7280;
+  --ith-table-border: #e8eaf0;
+  --ith-table-header-bg: #5b21b6;
+  --ith-table-header-text: #ffffff;
+  --ith-table-hover: #f6f4ff;
+  --ith-table-selected-bg: #f1ecff;
+  --ith-table-striped-bg: #fbfbfe;
+  --ith-table-accent: #6d28d9;
+  --ith-table-accent-soft: #ede9fe;
+  --ith-table-input-bg: #ffffff;
+  --ith-table-input-border: #dfe3ec;
+  --ith-table-footer-bg: #fcfcff;
+  --ith-table-filter-bg: #faf9ff;
+  --ith-table-overlay: rgba(255, 255, 255, 0.72);
+  --ith-table-radius: 14px;
+  --ith-table-shadow: 0 18px 40px -28px rgba(24, 20, 60, 0.55);
+  --ith-table-focus: rgba(109, 40, 217, 0.22);
+  --ith-table-cell-padding: 12px 16px;
+  --ith-table-font-size: 14px;
+  --ith-table-header-font-size: 13px;
+
+  display: block;
+  position: relative;
+  background: var(--ith-table-bg);
+  color: var(--ith-table-text);
+  border: 1px solid var(--ith-table-border);
+  border-radius: var(--ith-table-radius);
+  box-shadow: var(--ith-table-shadow);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: var(--ith-table-font-size);
+  overflow: hidden;
+}
+
+/* Dark theme — the attribute/class sits on <html> or <body>, outside the component,
+   so `:host-context()` is required for the selector to match. */
+:host-context([data-theme='dark']) .ith-table,
+:host-context(.dark) .ith-table {
+  --ith-table-bg: #161826;
+  --ith-table-text: #e7e9f3;
+  --ith-table-muted: #9aa0b5;
+  --ith-table-border: #2a2e42;
+  --ith-table-header-bg: #4c1d95;
+  --ith-table-header-text: #f3eeff;
+  --ith-table-hover: #1e2236;
+  --ith-table-selected-bg: #241b46;
+  --ith-table-striped-bg: #191c2c;
+  --ith-table-accent: #a78bfa;
+  --ith-table-accent-soft: #2b2150;
+  --ith-table-input-bg: #1b1e30;
+  --ith-table-input-border: #343a52;
+  --ith-table-footer-bg: #141622;
+  --ith-table-filter-bg: #1a1d2e;
+  --ith-table-overlay: rgba(17, 19, 30, 0.72);
+  --ith-table-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.85);
+  --ith-table-focus: rgba(167, 139, 250, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :host-context([data-theme='auto']) .ith-table {
+    --ith-table-bg: #161826;
+    --ith-table-text: #e7e9f3;
+    --ith-table-muted: #9aa0b5;
+    --ith-table-border: #2a2e42;
+    --ith-table-header-bg: #4c1d95;
+    --ith-table-header-text: #f3eeff;
+    --ith-table-hover: #1e2236;
+    --ith-table-selected-bg: #241b46;
+    --ith-table-striped-bg: #191c2c;
+    --ith-table-accent: #a78bfa;
+    --ith-table-accent-soft: #2b2150;
+    --ith-table-input-bg: #1b1e30;
+    --ith-table-input-border: #343a52;
+    --ith-table-footer-bg: #141622;
+    --ith-table-filter-bg: #1a1d2e;
+    --ith-table-overlay: rgba(17, 19, 30, 0.72);
+    --ith-table-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.85);
+    --ith-table-focus: rgba(167, 139, 250, 0.3);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Toolbar                                                             */
+/* ------------------------------------------------------------------ */
+
+.ith-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ith-table-border);
+}
+
+.ith-table-toolbar-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.ith-table-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ith-table-text);
+  white-space: nowrap;
+}
+
+.ith-table-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ith-table-accent-soft);
+  color: var(--ith-table-accent);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ith-table-badge-accent {
+  background: var(--ith-table-accent);
+  color: #ffffff;
+}
+
+.ith-table-search {
+  position: relative;
+  flex: 0 1 280px;
+  min-width: 180px;
+}
+
+.ith-table-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  color: var(--ith-table-muted);
+  pointer-events: none;
+}
+
+.ith-table-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 32px 0 34px;
+  border: 1px solid var(--ith-table-input-border);
+  border-radius: 10px;
+  background: var(--ith-table-input-bg);
+  color: var(--ith-table-text);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ith-table-search-input::placeholder {
+  color: var(--ith-table-muted);
+}
+
+.ith-table-search-input:focus {
+  outline: none;
+  border-color: var(--ith-table-accent);
+  box-shadow: 0 0 0 3px var(--ith-table-focus);
+}
+
+.ith-table-search-clear {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ith-table-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ith-table-search-clear:hover {
+  background: var(--ith-table-accent-soft);
+  color: var(--ith-table-accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Grid                                                                */
+/* ------------------------------------------------------------------ */
+
+.ith-table-scroll {
+  position: relative;
+  overflow: auto;
+}
+
+.ith-table-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+.ith-table-head-row th {
+  background: var(--ith-table-header-bg);
+  color: var(--ith-table-header-text);
+  font-size: var(--ith-table-header-font-size);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: left;
+  padding: 13px 16px;
+  white-space: nowrap;
+  border: 0;
+}
+
+.ith-table-sticky .ith-table-head-row th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.ith-table-th-label {
+  display: inline-block;
+}
+
+.ith-table-sort {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+.ith-table-sort-icons {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0.5;
+}
+
+.ith-table-sort-icons svg {
+  width: 8px;
+  height: 5px;
+  fill: currentColor;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.ith-table-sort-icons svg.is-active {
+  opacity: 1;
+}
+
+.ith-table-sort.is-sorted .ith-table-sort-icons {
+  opacity: 1;
+}
+
+.ith-table-select-cell {
+  width: 46px;
+  text-align: center;
+  padding-left: 14px;
+  padding-right: 10px;
+}
+
+.ith-table-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--ith-table-accent);
+  vertical-align: middle;
+}
+
+.ith-table-checkbox:focus-visible {
+  outline: 2px solid var(--ith-table-accent);
+  outline-offset: 2px;
+}
+
+.ith-table-row {
+  background: var(--ith-table-bg);
+  transition: background-color 0.15s ease;
+}
+
+.ith-table-hoverable .ith-table-row:hover {
+  background: var(--ith-table-hover);
+}
+
+.ith-table-row.ith-table-row-selected {
+  background: var(--ith-table-selected-bg);
+}
+
+.ith-table-row.ith-table-row-selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--ith-table-accent);
+}
+
+.ith-table-row-clickable {
+  cursor: pointer;
+}
+
+.ith-table-td {
+  padding: var(--ith-table-cell-padding);
+  border-bottom: 1px solid var(--ith-table-border);
+  font-size: var(--ith-table-font-size);
+  color: var(--ith-table-text);
+  vertical-align: middle;
+  white-space: nowrap;
+  background: transparent;
+}
+
+.ith-table-row:last-child .ith-table-td {
+  border-bottom: 0;
+}
+
+.ith-table-align-left {
+  text-align: left;
+}
+
+.ith-table-align-center {
+  text-align: center;
+}
+
+.ith-table-align-right {
+  text-align: right;
+}
+
+.ith-table-actions-head {
+  text-align: right;
+}
+
+.ith-table-actions-cell {
+  padding: var(--ith-table-cell-padding);
+  border-bottom: 1px solid var(--ith-table-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ith-table-row:last-child .ith-table-actions-cell {
+  border-bottom: 0;
+}
+
+.ith-table-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  margin-left: 4px;
+  border: 1px solid var(--ith-table-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ith-table-accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ith-table-action:hover:not(:disabled) {
+  background: var(--ith-table-accent-soft);
+  border-color: var(--ith-table-accent);
+}
+
+.ith-table-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ith-table-action-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* `TableRowAction.class` can add modifiers such as a danger style. */
+.ith-table-action.is-danger {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+/* ------------------------------------------------------------------ */
+/* Filters                                                             */
+/* ------------------------------------------------------------------ */
+
+.ith-table-filter-row th {
+  background: var(--ith-table-filter-bg);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--ith-table-border);
+  border-top: 1px solid var(--ith-table-border);
+}
+
+.ith-table-filter-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--ith-table-input-border);
+  border-radius: 7px;
+  background: var(--ith-table-input-bg);
+  color: var(--ith-table-text);
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.ith-table-filter-select {
+  cursor: pointer;
+  padding-right: 4px;
+}
+
+.ith-table-filter-input:focus {
+  outline: none;
+  border-color: var(--ith-table-accent);
+  box-shadow: 0 0 0 3px var(--ith-table-focus);
+}
+
+.ith-table-filter-input::placeholder {
+  color: var(--ith-table-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* States                                                              */
+/* ------------------------------------------------------------------ */
+
+.ith-table-status {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--ith-table-muted);
+  font-size: 13px;
+}
+
+.ith-table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ith-table-empty svg {
+  width: 36px;
+  height: 36px;
+  opacity: 0.45;
+}
+
+.ith-table-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ith-table-accent-soft);
+  border-top-color: var(--ith-table-accent);
+  border-radius: 50%;
+  animation: ith-table-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes ith-table-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ith-table-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--ith-table-overlay);
+  backdrop-filter: blur(1px);
+  color: var(--ith-table-text);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 3;
+}
+
+.ith-table-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ith-table-accent);
+  font-family: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Footer                                                              */
+/* ------------------------------------------------------------------ */
+
+.ith-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-top: 1px solid var(--ith-table-border);
+  background: var(--ith-table-footer-bg);
+  font-size: 12px;
+  color: var(--ith-table-muted);
+}
+
+.ith-table-footer-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ith-table-footer-info strong {
+  color: var(--ith-table-text);
+  font-weight: 600;
+}
+
+.ith-table-footer-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ith-table-pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ith-table-page-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--ith-table-border);
+  border-radius: 7px;
+  background: var(--ith-table-bg);
+  color: var(--ith-table-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.ith-table-page-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ith-table-page-btn:hover:not(:disabled) {
+  border-color: var(--ith-table-accent);
+  color: var(--ith-table-accent);
+  background: var(--ith-table-accent-soft);
+}
+
+.ith-table-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ith-table-page-number {
+  min-width: 30px;
+}
+
+.ith-table-page-number.is-active {
+  background: var(--ith-table-accent);
+  border-color: var(--ith-table-accent);
+  color: #ffffff;
+}
+
+.ith-table-page-number.is-active:hover {
+  background: var(--ith-table-accent);
+  color: #ffffff;
+}
+
+.ith-table-page-state {
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.ith-table-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.ith-table-select {
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--ith-table-border);
+  border-radius: 7px;
+  background: var(--ith-table-bg);
+  color: var(--ith-table-text);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ith-table-select:focus-visible,
+.ith-table-page-btn:focus-visible,
+.ith-table-action:focus-visible,
+.ith-table-link:focus-visible {
+  outline: 2px solid var(--ith-table-accent);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Modifiers                                                           */
+/* ------------------------------------------------------------------ */
+
+.ith-table-dense {
+  --ith-table-cell-padding: 8px 12px;
+  --ith-table-font-size: 13px;
+  --ith-table-header-font-size: 12px;
+}
+
+.ith-table-dense .ith-table-head-row th {
+  padding: 10px 12px;
+}
+
+.ith-table-striped .ith-table-row:nth-child(even) {
+  background: var(--ith-table-striped-bg);
+}
+
+.ith-table-bordered .ith-table-td,
+.ith-table-bordered .ith-table-actions-cell,
+.ith-table-bordered .ith-table-head-row th,
+.ith-table-bordered .ith-table-filter-row th {
+  border-right: 1px solid var(--ith-table-border);
+}
+
+.ith-table-bordered .ith-table-head-row th:last-child,
+.ith-table-bordered .ith-table-filter-row th:last-child {
+  border-right: 0;
+}
+
+.ith-table-bordered .ith-table-td:last-child,
+.ith-table-bordered .ith-table-actions-cell:last-child {
+  border-right: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ith-table-row,
+  .ith-table-action,
+  .ith-table-page-btn,
+  .ith-table-search-input,
+  .ith-table-sort-icons svg {
+    transition: none;
+  }
+
+  .ith-table-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 640px) {
+  .ith-table-toolbar,
+  .ith-table-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ith-table-search {
+    flex: 1 1 auto;
+  }
+
+  .ith-table-footer-controls {
+    justify-content: space-between;
+  }
+
+  .ith-table-page-state {
+    display: none;
+  }
+}
+
