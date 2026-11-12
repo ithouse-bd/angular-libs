@@ -4,6 +4,14 @@ All notable changes to `@ithouse-bd/ngx-dropdown` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-11-12
+
+### Fixed
+- README cascader inputs table now documents `searchFn`, `searchDebounce`, `searchMinLength`,
+  `searchingText` and `searchErrorText`.
+- README documents disabled options/branches for the cascader.
+- THEMING documents `--ith-selected-ring` and the cascader's indigo defaults.
+
 ## [1.1.0] - 2026-11-12
 
 ### Added

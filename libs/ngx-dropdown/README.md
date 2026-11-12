@@ -208,6 +208,9 @@ readonly loadChildren = (node: CascaderOption) =>
 - `value` can be any type your API uses (string, number, or an object with `bindValue`);
   `selectionChange` fires only for user picks, so external `setValue`/`patchValue` just
   re-renders the control.
+- **Disabled options:** `disabled: true` on a node greys it out, skips it in keyboard
+  navigation and blocks selection (`aria-disabled` is set); a disabled parent disables its
+  whole branch. The control itself is disabled through `[disabled]` or the bound form control.
 - **Server-side search:** provide `searchFn` and typing queries your API after
   `searchDebounce` ms (default 300). Each hit must be `{ option, path }`, so the whole tree is
   searchable without loading it:
@@ -226,10 +229,10 @@ Invalid responses are ignored (stale requests never overwrite newer hits), and f
 `searchErrorText` with a retry button.
 
 Cascader inputs: `options`, `placeholder`, `levelPlaceholders`, `loadChildren`, `resolveValue`,
-`searchable`,
-`disabled`, `clearable`, `changeOnSelect`, `closeOnSelect`, `maxHeight`, `searchPlaceholder`,
-`noOptionsText`, `loadingText`, `loadErrorText`, `retryText`, `rootLabel`, `pathSeparator`,
-`bindLabel`, `bindValue`, `bindChildren`, `ariaLabel`.
+`searchable`, `disabled`, `clearable`, `changeOnSelect`, `closeOnSelect`, `maxHeight`,
+`searchPlaceholder`, `noOptionsText`, `loadingText`, `loadErrorText`, `retryText`, `rootLabel`,
+`pathSeparator`, `bindLabel`, `bindValue`, `bindChildren`, `ariaLabel`, `searchFn`,
+`searchDebounce`, `searchMinLength`, `searchingText`, `searchErrorText`.
 Outputs: `valueChange`, `selectionChange`, `openChange`, `searchChange`.
 
 ### Grouped options
