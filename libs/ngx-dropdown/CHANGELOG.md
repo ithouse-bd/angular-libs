@@ -4,6 +4,22 @@ All notable changes to `@ithouse-bd/ngx-dropdown` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-11-12
+
+### Added
+- Brand theming: `--ith-dropdown-brand` and `--ith-cascader-brand` drive the focus border,
+  focus ring, selected row/text, hover tint and selected ring via `color-mix()`, in light and
+  dark mode.
+
+### Changed (breaking)
+- Removed `NgxDropdownModule`. `<ith-dropdown>` and `<ith-cascader>` are standalone only;
+  import them straight into a standalone component. Angular 20+ is required.
+- No `CommonModule` / `NgIf` / `NgFor` anywhere: built-in control flow and signals only.
+- Demo application is zoneless (`provideZonelessChangeDetection`) and uses lazy standalone
+  routes (`/table`, `/dropdown`, `/cascader`) instead of an `AppModule`.
+- Theme tokens are now public: they resolve on the component host, so `:root`/ancestor overrides
+  (e.g. `ith-dropdown { --ith-bg: ... }`) work instead of being shadowed by the internal class.
+
 ## [1.1.1] - 2026-11-12
 
 ### Fixed

@@ -27,7 +27,7 @@ without style conflicts.
 - **Keyboard navigation** and ARIA wiring — arrows, Home/End, Enter/Space, Escape
 - **Reactive & template-driven forms** through `ControlValueAccessor`
 - **Theming** with CSS variables: light, dark and auto
-- **Signal inputs**, standalone component, and an `NgModule` wrapper if you prefer modules
+- **Signal inputs**, standalone components only — no `NgModule`, no `CommonModule`
 - **No runtime dependencies** other than `tslib`; no CSS framework required
 
 ## Compatibility
@@ -36,9 +36,9 @@ without style conflicts.
 | --- | --- |
 | 20 and newer (20+) | ✅ |
 | 17, 18, 19 | ❌ not supported |
-| Standalone components | ✅ (the default since Angular 19) |
-| NgModule apps | ✅ (`NgxDropdownModule`) |
-| Zoneless change detection | ✅ |
+| Standalone components | ✅ required |
+| `NgModule` wrappers | ❌ removed in 2.0 (import the standalone components directly) |
+| Zoneless change detection | ✅ (signals throughout) |
 | SSR / prerendering | ✅ (no direct DOM access outside the browser) |
 
 ## Installation
@@ -91,15 +91,15 @@ export class DemoComponent {
 }
 ```
 
-### With an NgModule
+### Standalone bootstrap (zoneless)
 
 ```typescript
-import { NgxDropdownModule } from '@ithouse-bd/ngx-dropdown';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
 
-@NgModule({
-  imports: [NgxDropdownModule],
-})
-export class AppModule {}
+bootstrapApplication(AppComponent, {
+  providers: [provideZonelessChangeDetection()],
+});
 ```
 
 ## Usage
@@ -167,6 +167,45 @@ onAreaChange(event: CascaderChangeEvent) {
   // event.value = 'barguna-sadar'
   // event.path  = [Barishal, Barguna, Barguna Sadar]
 }
+```
+
+#### Custom field names (`bindLabel` / `bindValue` / `bindChildren`)
+
+Use your API's own keys instead of `label` / `value` / `children`:
+
+```typescript
+// GET /api/areas → { id: 7, name: 'Barguna', children: [...] }
+readonly loadChildren = (node: CascaderOption) =>
+  this.http.get<CascaderOption[]>(`/api/areas/${node.id}/children`);
+```
+
+```html
+<ith-cascader
+  [options]="divisions"
+  bindLabel="name"
+  bindValue="id"
+  bindChildren="children"
+  [loadChildren]="loadChildren"
+  [resolveValue]="resolveValue"
+  [(value)]="areaId">          <!-- areaId is the leaf id, e.g. 42 -->
+</ith-cascader>
+```
+
+- `bindValue` decides what `value`, `[(value)]` and `selectionChange.value` contain. Without
+  it the node's `value` key is used (and the whole node when that key is missing), so set it
+  for API data.
+- `bindLabel` is used everywhere the label is rendered: trigger, list, breadcrumbs and search
+  hits (fallback: `label` → `name` → `value`).
+- The **full path** is not part of `value`. Take it from the event or hydrate it on edit:
+  `(selectionChange)="onAreaChange($event)"` → `event.path` (root→leaf nodes), or
+  `[resolveValue]="(id) => http.get<CascaderOption[]>('/api/areas/' + id + '/path')"`.
+- Server search hits use the same keys: each hit's `option` and `path` nodes can be
+  `{ id, name }` objects, and `bindValue`/`bindLabel` apply to them too:
+
+```typescript
+readonly searchAreas = (term: string) =>
+  this.http.get<CascaderSearchResult[]>('/api/areas/search', { params: { q: term } });
+  // → [{ option: { id: 42, name: 'Uttara' }, path: [{ id: 1, name: 'Dhaka' }, …] }]
 ```
 
 #### API-driven (lazy) levels
@@ -400,12 +439,24 @@ The component exposes its colours as CSS custom properties and responds to a
 <!-- or data-theme="light" / data-theme="auto" -->
 ```
 
+Adapt it to your application's palette with one token — focus ring, selected row, hover tint
+and action text all derive from it (light and dark):
+
+```css
+:root {
+  --ith-dropdown-brand: #0f766e;
+  --ith-cascader-brand: #0f766e;   /* cascader has its own brand token */
+}
+```
+
+Individual tokens are still available for finer control:
+
 ```css
 ith-dropdown {
   --ith-bg: #ffffff;
   --ith-border: #ced4da;
   --ith-text: #212529;
-  --ith-primary: #0d6efd;
+  --ith-selected-ring: rgba(15, 118, 110, 0.3);
 }
 ```
 

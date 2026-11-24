@@ -1,28 +1,77 @@
+:host {
+  /* Public --ith-* tokens resolve here with light defaults. --ith-cascader-brand is
+     the per-component brand colour; accent surfaces derive from it. */
+  --_brand: var(--ith-cascader-brand, #6366f1);
+  --_bg: var(--ith-bg, #ffffff);
+  --_surface-alt: var(--ith-surface-alt, #f8f9fb);
+  --_text: var(--ith-text, #111827);
+  --_muted: var(--ith-muted, #6b7280);
+  --_placeholder: var(--ith-placeholder, #9aa1ac);
+  --_border: var(--ith-border, #e3e6ea);
+  --_border-strong: var(--ith-border-strong, #d3d8df);
+  --_border-focus: var(--ith-border-focus, var(--_brand));
+  --_shadow-focus: var(--ith-shadow-focus, color-mix(in srgb, var(--_brand) 14%, transparent));
+  --_hover-bg: var(--ith-hover-bg, #f4f5f7);
+  --_selected-bg: var(--ith-selected-bg, color-mix(in srgb, var(--_brand) 8%, #ffffff));
+  --_selected-text: var(--ith-selected-text, color-mix(in srgb, var(--_brand) 90%, #000000));
+  --_selected-ring: var(--ith-selected-ring, color-mix(in srgb, var(--_brand) 30%, transparent));
+  --_disabled-bg: var(--ith-disabled-bg, #f2f3f5);
+  --_disabled-opacity: var(--ith-disabled-opacity, 0.55);
+  --_panel-shadow: var(--ith-panel-shadow, 0 10px 34px -12px rgba(16, 24, 40, 0.18), 0 2px 8px -2px rgba(16, 24, 40, 0.08), 0 0 0 1px rgba(16, 24, 40, 0.04));
+  --_search-border: var(--ith-search-border, #e3e6ea);
+  --_radius: var(--ith-radius, 0.625rem);
+  --_radius-sm: var(--ith-radius-sm, 0.5rem);
+}
+
+:host-context([data-theme='dark']),
+:host-context(.dark) {
+  --_brand: var(--ith-cascader-brand, #8b9bff);
+  --_bg: var(--ith-bg, #17181d);
+  --_surface-alt: var(--ith-surface-alt, #1d1f25);
+  --_text: var(--ith-text, #e8eaf0);
+  --_muted: var(--ith-muted, #9aa1ad);
+  --_placeholder: var(--ith-placeholder, #7b8290);
+  --_border: var(--ith-border, #2c2f37);
+  --_border-strong: var(--ith-border-strong, #3a3e48);
+  --_border-focus: var(--ith-border-focus, var(--_brand));
+  --_shadow-focus: var(--ith-shadow-focus, color-mix(in srgb, var(--_brand) 22%, transparent));
+  --_hover-bg: var(--ith-hover-bg, #22252d);
+  --_selected-bg: var(--ith-selected-bg, color-mix(in srgb, var(--_brand) 22%, #17181d));
+  --_selected-text: var(--ith-selected-text, color-mix(in srgb, var(--_brand) 60%, #ffffff));
+  --_selected-ring: var(--ith-selected-ring, color-mix(in srgb, var(--_brand) 35%, transparent));
+  --_disabled-bg: var(--ith-disabled-bg, #20232a);
+  --_disabled-opacity: var(--ith-disabled-opacity, 0.5);
+  --_panel-shadow: var(--ith-panel-shadow, 0 16px 40px -12px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05));
+  --_search-border: var(--ith-search-border, #2c2f37);
+}
+
+@media (prefers-color-scheme: dark) {
+  :host-context([data-theme='auto']) {
+    --_brand: var(--ith-cascader-brand, #8b9bff);
+    --_bg: var(--ith-bg, #17181d);
+    --_surface-alt: var(--ith-surface-alt, #1d1f25);
+    --_text: var(--ith-text, #e8eaf0);
+    --_muted: var(--ith-muted, #9aa1ad);
+    --_placeholder: var(--ith-placeholder, #7b8290);
+    --_border: var(--ith-border, #2c2f37);
+    --_border-strong: var(--ith-border-strong, #3a3e48);
+    --_border-focus: var(--ith-border-focus, var(--_brand));
+    --_shadow-focus: var(--ith-shadow-focus, color-mix(in srgb, var(--_brand) 22%, transparent));
+    --_hover-bg: var(--ith-hover-bg, #22252d);
+    --_selected-bg: var(--ith-selected-bg, color-mix(in srgb, var(--_brand) 22%, #17181d));
+    --_selected-text: var(--ith-selected-text, color-mix(in srgb, var(--_brand) 60%, #ffffff));
+    --_selected-ring: var(--ith-selected-ring, color-mix(in srgb, var(--_brand) 35%, transparent));
+    --_disabled-bg: var(--ith-disabled-bg, #20232a);
+    --_disabled-opacity: var(--ith-disabled-opacity, 0.5);
+    --_panel-shadow: var(--ith-panel-shadow, 0 16px 40px -12px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05));
+    --_search-border: var(--ith-search-border, #2c2f37);
+  }
+}
+
 /* Cascading select — shares the `--ith-*` tokens with <ith-dropdown> so one theme
    configuration styles both components. */
 
 .ith-cascader {
-  --ith-bg: #ffffff;
-  --ith-surface-alt: #f8f9fb;
-  --ith-text: #111827;
-  --ith-muted: #6b7280;
-  --ith-placeholder: #9aa1ac;
-  --ith-border: #e3e6ea;
-  --ith-border-strong: #d3d8df;
-  --ith-border-focus: #6366f1;
-  --ith-shadow-focus: rgba(99, 102, 241, 0.14);
-  --ith-hover-bg: #f4f5f7;
-  --ith-selected-bg: #eef1ff;
-  --ith-selected-text: #4f46e5;
-  --ith-selected-ring: rgba(79, 70, 229, 0.3);
-  --ith-disabled-bg: #f2f3f5;
-  --ith-disabled-opacity: 0.55;
-  --ith-panel-shadow: 0 10px 34px -12px rgba(16, 24, 40, 0.18),
-    0 2px 8px -2px rgba(16, 24, 40, 0.08), 0 0 0 1px rgba(16, 24, 40, 0.04);
-  --ith-search-border: #e3e6ea;
-  --ith-radius: 0.625rem;
-  --ith-radius-sm: 0.5rem;
-
   position: relative;
   display: block;
   width: 100%;
@@ -30,52 +79,7 @@
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 0.9rem;
   line-height: 1.45;
-  color: var(--ith-text);
-}
-
-:host-context([data-theme='dark']) .ith-cascader,
-:host-context(.dark) .ith-cascader {
-  --ith-bg: #17181d;
-  --ith-surface-alt: #1d1f25;
-  --ith-text: #e8eaf0;
-  --ith-muted: #9aa1ad;
-  --ith-placeholder: #7b8290;
-  --ith-border: #2c2f37;
-  --ith-border-strong: #3a3e48;
-  --ith-border-focus: #8b9bff;
-  --ith-shadow-focus: rgba(139, 155, 255, 0.22);
-  --ith-hover-bg: #22252d;
-  --ith-selected-bg: #262a3d;
-  --ith-selected-text: #aebcff;
-  --ith-selected-ring: rgba(174, 188, 255, 0.35);
-  --ith-disabled-bg: #20232a;
-  --ith-disabled-opacity: 0.5;
-  --ith-panel-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  --ith-search-border: #2c2f37;
-}
-
-@media (prefers-color-scheme: dark) {
-  :host-context([data-theme='auto']) .ith-cascader {
-    --ith-bg: #17181d;
-    --ith-surface-alt: #1d1f25;
-    --ith-text: #e8eaf0;
-    --ith-muted: #9aa1ad;
-    --ith-placeholder: #7b8290;
-    --ith-border: #2c2f37;
-    --ith-border-strong: #3a3e48;
-    --ith-border-focus: #8b9bff;
-    --ith-shadow-focus: rgba(139, 155, 255, 0.22);
-    --ith-hover-bg: #22252d;
-    --ith-selected-bg: #262a3d;
-    --ith-selected-text: #aebcff;
-    --ith-selected-ring: rgba(174, 188, 255, 0.35);
-    --ith-disabled-bg: #20232a;
-    --ith-disabled-opacity: 0.5;
-    --ith-panel-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.05);
-    --ith-search-border: #2c2f37;
-  }
+  color: var(--_text);
 }
 
 /* ------------------------------------------------------------------ */
@@ -94,10 +98,10 @@
   min-height: 44px;
   padding-block: 0.5rem;
   padding-inline: 0.8rem 2.6rem;
-  border: 1px solid var(--ith-border);
-  border-radius: var(--ith-radius);
-  background: var(--ith-bg);
-  color: var(--ith-text);
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius);
+  background: var(--_bg);
+  color: var(--_text);
   font: inherit;
   text-align: start;
   cursor: pointer;
@@ -105,25 +109,25 @@
 }
 
 .ith-cascader-trigger:hover:not(:disabled) {
-  border-color: var(--ith-border-strong);
-  background: var(--ith-surface-alt);
+  border-color: var(--_border-strong);
+  background: var(--_surface-alt);
 }
 
 .ith-cascader-trigger:focus-visible {
   outline: none;
-  border-color: var(--ith-border-focus);
-  box-shadow: 0 0 0 2px var(--ith-shadow-focus);
+  border-color: var(--_border-focus);
+  box-shadow: 0 0 0 2px var(--_shadow-focus);
 }
 
 .ith-cascader-open .ith-cascader-trigger {
-  border-color: var(--ith-border-focus);
-  background: var(--ith-bg);
-  box-shadow: 0 0 0 2px var(--ith-shadow-focus);
+  border-color: var(--_border-focus);
+  background: var(--_bg);
+  box-shadow: 0 0 0 2px var(--_shadow-focus);
 }
 
 .ith-cascader-disabled .ith-cascader-trigger {
-  background: var(--ith-disabled-bg);
-  opacity: var(--ith-disabled-opacity);
+  background: var(--_disabled-bg);
+  opacity: var(--_disabled-opacity);
   cursor: not-allowed;
 }
 
@@ -137,13 +141,13 @@
 }
 
 .ith-cascader-crumb {
-  color: var(--ith-muted);
+  color: var(--_muted);
   font-size: 0.85rem;
   white-space: nowrap;
 }
 
 .ith-cascader-crumb:last-of-type {
-  color: var(--ith-text);
+  color: var(--_text);
   font-weight: 600;
 }
 
@@ -151,13 +155,13 @@
   flex: 0 0 auto;
   width: 12px;
   height: 12px;
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
   opacity: 0.8;
 }
 
 .ith-cascader-placeholder {
   flex: 1 1 auto;
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -173,7 +177,7 @@
   width: 24px;
   height: 24px;
   transform: translateY(-50%);
-  color: var(--ith-muted);
+  color: var(--_muted);
   transition: transform 0.18s ease, color 0.16s ease;
   pointer-events: none;
 }
@@ -184,12 +188,12 @@
 }
 
 .ith-cascader-trigger:hover .ith-cascader-chevron {
-  color: var(--ith-text);
+  color: var(--_text);
 }
 
 .ith-cascader-chevron.is-open {
   transform: translateY(-50%) rotate(180deg);
-  color: var(--ith-border-focus);
+  color: var(--_border-focus);
 }
 
 .ith-cascader-clear {
@@ -205,7 +209,7 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--ith-muted);
+  color: var(--_muted);
   cursor: pointer;
   transition: background-color 0.14s ease, color 0.14s ease;
 }
@@ -221,12 +225,12 @@
 }
 
 .ith-cascader-clear:hover {
-  background: var(--ith-hover-bg);
-  color: var(--ith-text);
+  background: var(--_hover-bg);
+  color: var(--_text);
 }
 
 .ith-cascader-clear:focus-visible {
-  outline: 2px solid var(--ith-border-focus);
+  outline: 2px solid var(--_border-focus);
   outline-offset: 1px;
 }
 
@@ -241,10 +245,10 @@
   inset-inline: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--ith-border);
-  border-radius: var(--ith-radius);
-  background: var(--ith-bg);
-  box-shadow: var(--ith-panel-shadow);
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius);
+  background: var(--_bg);
+  box-shadow: var(--_panel-shadow);
   overflow: hidden;
   transform-origin: top center;
   animation: ith-cascader-in 0.14s ease-out;
@@ -260,8 +264,8 @@
 .ith-cascader-search {
   position: relative;
   padding: 0.5rem;
-  border-bottom: 1px solid var(--ith-border);
-  background: var(--ith-bg);
+  border-bottom: 1px solid var(--_border);
+  background: var(--_bg);
 }
 
 .ith-cascader-search-icon {
@@ -271,7 +275,7 @@
   width: 15px;
   height: 15px;
   margin-top: -0.44rem;
-  color: var(--ith-muted);
+  color: var(--_muted);
   pointer-events: none;
 }
 
@@ -282,26 +286,26 @@
   padding-block: 0;
   padding-inline: 2.15rem 2rem;
   border: 1px solid transparent;
-  border-radius: var(--ith-radius-sm);
-  background: var(--ith-surface-alt);
-  color: var(--ith-text);
+  border-radius: var(--_radius-sm);
+  background: var(--_surface-alt);
+  color: var(--_text);
   font: inherit;
   font-size: 0.875rem;
   transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
 }
 
 .ith-cascader-search-input::placeholder {
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
 }
 
 .ith-cascader-search-input:hover {
-  border-color: var(--ith-border);
+  border-color: var(--_border);
 }
 
 .ith-cascader-search-input:focus {
   outline: none;
-  background: var(--ith-bg);
-  border-color: var(--ith-border-focus);
+  background: var(--_bg);
+  border-color: var(--_border-focus);
 }
 
 .ith-cascader-search-clear {
@@ -317,7 +321,7 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--ith-muted);
+  color: var(--_muted);
   cursor: pointer;
   transition: background-color 0.14s ease, color 0.14s ease;
 }
@@ -328,8 +332,8 @@
 }
 
 .ith-cascader-search-clear:hover {
-  background: var(--ith-hover-bg);
-  color: var(--ith-text);
+  background: var(--_hover-bg);
+  color: var(--_text);
 }
 
 .ith-cascader-breadcrumb {
@@ -338,8 +342,8 @@
   flex-wrap: wrap;
   gap: 0.15rem;
   padding: 0.35rem 0.5rem;
-  border-bottom: 1px solid var(--ith-border);
-  background: var(--ith-surface-alt);
+  border-bottom: 1px solid var(--_border);
+  background: var(--_surface-alt);
   font-size: 0.8rem;
 }
 
@@ -349,10 +353,10 @@
   width: 24px;
   height: 24px;
   margin-inline-end: 0.2rem;
-  border: 1px solid var(--ith-border);
+  border: 1px solid var(--_border);
   border-radius: 999px;
-  background: var(--ith-bg);
-  color: var(--ith-text);
+  background: var(--_bg);
+  color: var(--_text);
   cursor: pointer;
   transition: border-color 0.14s ease, color 0.14s ease, background-color 0.14s ease;
 }
@@ -363,13 +367,13 @@
 }
 
 .ith-cascader-back:hover {
-  border-color: var(--ith-border-focus);
-  background: var(--ith-selected-bg);
-  color: var(--ith-selected-text);
+  border-color: var(--_border-focus);
+  background: var(--_selected-bg);
+  color: var(--_selected-text);
 }
 
 .ith-cascader-back:focus-visible {
-  outline: 2px solid var(--ith-border-focus);
+  outline: 2px solid var(--_border-focus);
   outline-offset: 1px;
 }
 
@@ -379,7 +383,7 @@
   border: 0;
   border-radius: 0.35rem;
   background: transparent;
-  color: var(--ith-muted);
+  color: var(--_muted);
   font: inherit;
   cursor: pointer;
   white-space: nowrap;
@@ -389,33 +393,33 @@
 }
 
 .ith-cascader-crumb-btn:hover {
-  background: var(--ith-hover-bg);
-  color: var(--ith-selected-text);
+  background: var(--_hover-bg);
+  color: var(--_selected-text);
 }
 
 .ith-cascader-crumb-btn:focus-visible {
-  outline: 2px solid var(--ith-border-focus);
+  outline: 2px solid var(--_border-focus);
   outline-offset: 0;
 }
 
 .ith-cascader-crumb-btn.is-current {
-  color: var(--ith-text);
+  color: var(--_text);
   font-weight: 600;
   cursor: default;
 }
 
 .ith-cascader-crumb-btn.is-current:hover {
   background: transparent;
-  color: var(--ith-text);
+  color: var(--_text);
 }
 
 .ith-cascader-level-hint {
   margin-inline-start: auto;
   padding: 0.1rem 0.5rem;
-  border: 1px solid var(--ith-border);
+  border: 1px solid var(--_border);
   border-radius: 999px;
-  background: var(--ith-bg);
-  color: var(--ith-muted);
+  background: var(--_bg);
+  color: var(--_muted);
   font-size: 0.7rem;
   font-weight: 500;
   white-space: nowrap;
@@ -432,7 +436,7 @@
   overflow-y: auto;
   outline: none;
   scrollbar-width: thin;
-  scrollbar-color: var(--ith-border-strong) transparent;
+  scrollbar-color: var(--_border-strong) transparent;
 }
 
 .ith-cascader-list::-webkit-scrollbar {
@@ -443,7 +447,7 @@
   border: 2px solid transparent;
   border-radius: 999px;
   background-clip: content-box;
-  background-color: var(--ith-border-strong);
+  background-color: var(--_border-strong);
 }
 
 .ith-cascader-list::-webkit-scrollbar-track {
@@ -457,26 +461,26 @@
   gap: 0.5rem;
   min-height: 40px;
   padding: 0.45rem 0.6rem;
-  border-radius: var(--ith-radius-sm);
-  color: var(--ith-text);
+  border-radius: var(--_radius-sm);
+  color: var(--_text);
   cursor: pointer;
   user-select: none;
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .ith-cascader-option.is-active {
-  background: var(--ith-hover-bg);
+  background: var(--_hover-bg);
 }
 
 .ith-cascader-option.is-selected {
-  background: var(--ith-selected-bg);
-  color: var(--ith-selected-text);
+  background: var(--_selected-bg);
+  color: var(--_selected-text);
   font-weight: 600;
 }
 
 .ith-cascader-option.is-selected.is-active {
-  background: var(--ith-selected-bg);
-  box-shadow: inset 0 0 0 1px var(--ith-selected-ring);
+  background: var(--_selected-bg);
+  box-shadow: inset 0 0 0 1px var(--_selected-ring);
 }
 
 .ith-cascader-option.is-disabled {
@@ -504,7 +508,7 @@
 }
 
 .ith-cascader-option-path {
-  color: var(--ith-muted);
+  color: var(--_muted);
   font-size: 0.73rem;
   font-weight: 400;
   white-space: nowrap;
@@ -513,7 +517,7 @@
 }
 
 .ith-cascader-option.is-selected .ith-cascader-option-path {
-  color: var(--ith-selected-text);
+  color: var(--_selected-text);
   opacity: 0.75;
 }
 
@@ -525,15 +529,15 @@
 }
 
 .ith-cascader-option-chevron {
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
 }
 
 .ith-cascader-option.is-active .ith-cascader-option-chevron {
-  color: var(--ith-muted);
+  color: var(--_muted);
 }
 
 .ith-cascader-check {
-  color: var(--ith-selected-text);
+  color: var(--_selected-text);
 }
 
 /* ------------------------------------------------------------------ */
@@ -546,7 +550,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1.4rem 0.9rem;
-  color: var(--ith-muted);
+  color: var(--_muted);
   font-size: 0.83rem;
   text-align: center;
 }
@@ -560,8 +564,8 @@
   display: inline-block;
   width: 15px;
   height: 15px;
-  border: 2px solid var(--ith-border);
-  border-top-color: var(--ith-border-focus);
+  border: 2px solid var(--_border);
+  border-top-color: var(--_border-focus);
   border-radius: 50%;
   animation: ith-cascader-spin 0.7s linear infinite;
 }
@@ -573,22 +577,22 @@
 }
 
 .ith-cascader-error {
-  color: var(--ith-text);
+  color: var(--_text);
 }
 
 .ith-cascader-error-detail {
   font-size: 0.75rem;
-  color: var(--ith-muted);
+  color: var(--_muted);
   word-break: break-word;
 }
 
 .ith-cascader-retry {
   margin-top: 0.1rem;
   padding: 0.3rem 0.8rem;
-  border: 1px solid var(--ith-border);
+  border: 1px solid var(--_border);
   border-radius: 999px;
-  background: var(--ith-bg);
-  color: var(--ith-selected-text);
+  background: var(--_bg);
+  color: var(--_selected-text);
   font: inherit;
   font-size: 0.78rem;
   font-weight: 600;
@@ -597,12 +601,12 @@
 }
 
 .ith-cascader-retry:hover {
-  border-color: var(--ith-border-focus);
-  background: var(--ith-selected-bg);
+  border-color: var(--_border-focus);
+  background: var(--_selected-bg);
 }
 
 .ith-cascader-retry:focus-visible {
-  outline: 2px solid var(--ith-border-focus);
+  outline: 2px solid var(--_border-focus);
   outline-offset: 1px;
 }
 

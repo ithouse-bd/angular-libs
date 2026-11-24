@@ -69,7 +69,29 @@ The component uses `@media (prefers-color-scheme: dark)` to detect system prefer
 
 ## CSS Custom Properties
 
-All themeable properties are defined on the `.ith-dropdown` class. Override them in your CSS.
+All themeable properties are public tokens: set them on `:root`, any ancestor, or the `ith-dropdown`
+element itself. They resolve on the component host with the light-mode defaults listed here.
+
+### One token = your brand colour
+
+The fastest way to match your application palette is the brand token. Focus ring, selected
+row, hover tint and action text all derive from it in light **and** dark mode:
+
+```css
+:root {
+  --ith-dropdown-brand: #0f766e;   /* your primary colour */
+}
+```
+
+For a runtime theme, set it inline on the component:
+
+```html
+<ith-dropdown [style.--ith-dropdown-brand]="userBrandColor()" [options]="options" />
+```
+
+`<ith-cascader>` uses its own `--ith-cascader-brand` (default `#6366f1`) and derives its
+focus border, selected row and ring from it. The shared `--ith-*` tokens below still apply
+to both components, so a single neutral/accent override styles the pair.
 
 ### Core Colors
 
@@ -84,13 +106,17 @@ All themeable properties are defined on the `.ith-dropdown` class. Override them
 
 | Variable | Description | Light | Dark |
 |----------|-------------|-------|------|
-| `--ith-border-focus` | Border color when focused/open | `#86b7fe` | `#4dabf7` |
-| `--ith-shadow-focus` | Focus ring shadow | `rgba(13, 110, 253, 0.25)` | `rgba(77, 171, 247, 0.25)` |
+| `--ith-dropdown-brand` | Base brand colour; the rows below derive from it | `#0d6efd` | `#4dabf7` |
+| `--ith-border-focus` | Border color when focused/open | brand 48% + white | `var(--ith-dropdown-brand)` |
+| `--ith-shadow-focus` | Focus ring shadow | brand 25% + transparent | brand 25% + transparent |
 | `--ith-hover-bg` | Background on hover | `#f8f9fa` | `#2d2d2d` |
-| `--ith-selected-bg` | Background for selected items | `#e8f0fe` | `#1c2f4d` |
-| `--ith-selected-text` | Text color for selected items | `#0b5ed7` | `#8ec1ff` |
-| `--ith-selected-hover-bg` | Legacy hover fill (the ring below is used now) | `#dfeaff` | `#223a5e` |
-| `--ith-selected-ring` | Inset ring for a selected row on hover/keyboard focus | `rgba(13, 110, 253, 0.28)` | `rgba(142, 193, 255, 0.32)` |
+| `--ith-selected-bg` | Background for selected items | brand 10% + white | brand 20% + `#1e1e1e` |
+| `--ith-selected-text` | Text color for selected items | brand 84% + black | brand 40% + white |
+| `--ith-selected-hover-bg` | Legacy hover fill (the ring below is used now) | brand 14% + white | brand 26% + `#1e1e1e` |
+| `--ith-selected-ring` | Inset ring for a selected row on hover/keyboard focus | brand 28% + transparent | brand 32% + transparent |
+
+`brand X% + colour` means `color-mix(in srgb, var(--ith-dropdown-brand) X%, colour)`, so all of
+these follow a single brand change; set an individual token to opt out of the derivation.
 
 ### Panel & Groups
 

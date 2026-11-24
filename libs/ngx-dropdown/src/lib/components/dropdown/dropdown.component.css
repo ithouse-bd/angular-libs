@@ -1,25 +1,79 @@
+:host {
+  /* Public --ith-* tokens resolve here with light defaults. --ith-dropdown-brand is
+     the per-component brand colour; accent surfaces derive from it. */
+  --_brand: var(--ith-dropdown-brand, #0d6efd);
+  --_bg: var(--ith-bg, #ffffff);
+  --_text: var(--ith-text, #212529);
+  --_border: var(--ith-border, #ced4da);
+  --_border-focus: var(--ith-border-focus, color-mix(in srgb, var(--_brand) 48%, #ffffff));
+  --_shadow-focus: var(--ith-shadow-focus, color-mix(in srgb, var(--_brand) 25%, transparent));
+  --_hover-bg: var(--ith-hover-bg, #f8f9fa);
+  --_selected-bg: var(--ith-selected-bg, color-mix(in srgb, var(--_brand) 10%, #ffffff));
+  --_selected-text: var(--ith-selected-text, color-mix(in srgb, var(--_brand) 84%, #000000));
+  --_selected-hover-bg: var(--ith-selected-hover-bg, color-mix(in srgb, var(--_brand) 14%, #ffffff));
+  --_selected-ring: var(--ith-selected-ring, color-mix(in srgb, var(--_brand) 28%, transparent));
+  --_disabled-bg: var(--ith-disabled-bg, #e9ecef);
+  --_disabled-opacity: var(--ith-disabled-opacity, 0.6);
+  --_placeholder: var(--ith-placeholder, #6c757d);
+  --_group-bg: var(--ith-group-bg, #f8f9fa);
+  --_group-text: var(--ith-group-text, #495057);
+  --_panel-shadow: var(--ith-panel-shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
+  --_search-border: var(--ith-search-border, #ced4da);
+  --_action-bg: var(--ith-action-bg, #f8f9fa);
+  --_page-bg: var(--ith-page-bg, #ffffff);
+}
+
+:host-context([data-theme='dark']),
+:host-context(.dark) {
+  --_brand: var(--ith-dropdown-brand, #4dabf7);
+  --_bg: var(--ith-bg, #1e1e1e);
+  --_text: var(--ith-text, #e1e1e1);
+  --_border: var(--ith-border, #3d3d3d);
+  --_border-focus: var(--ith-border-focus, var(--_brand));
+  --_shadow-focus: var(--ith-shadow-focus, color-mix(in srgb, var(--_brand) 25%, transparent));
+  --_hover-bg: var(--ith-hover-bg, #2d2d2d);
+  --_selected-bg: var(--ith-selected-bg, color-mix(in srgb, var(--_brand) 20%, #1e1e1e));
+  --_selected-text: var(--ith-selected-text, color-mix(in srgb, var(--_brand) 40%, #ffffff));
+  --_selected-hover-bg: var(--ith-selected-hover-bg, color-mix(in srgb, var(--_brand) 26%, #1e1e1e));
+  --_selected-ring: var(--ith-selected-ring, color-mix(in srgb, var(--_brand) 32%, transparent));
+  --_disabled-bg: var(--ith-disabled-bg, #2d2d2d);
+  --_disabled-opacity: var(--ith-disabled-opacity, 0.5);
+  --_placeholder: var(--ith-placeholder, #a0a0a0);
+  --_group-bg: var(--ith-group-bg, #252525);
+  --_group-text: var(--ith-group-text, #b0b0b0);
+  --_panel-shadow: var(--ith-panel-shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.5));
+  --_search-border: var(--ith-search-border, #3d3d3d);
+  --_action-bg: var(--ith-action-bg, #252525);
+  --_page-bg: var(--ith-page-bg, #1e1e1e);
+}
+
+@media (prefers-color-scheme: dark) {
+  :host-context([data-theme='auto']) {
+    --_brand: var(--ith-dropdown-brand, #4dabf7);
+    --_bg: var(--ith-bg, #1e1e1e);
+    --_text: var(--ith-text, #e1e1e1);
+    --_border: var(--ith-border, #3d3d3d);
+    --_border-focus: var(--ith-border-focus, var(--_brand));
+    --_shadow-focus: var(--ith-shadow-focus, color-mix(in srgb, var(--_brand) 25%, transparent));
+    --_hover-bg: var(--ith-hover-bg, #2d2d2d);
+    --_selected-bg: var(--ith-selected-bg, color-mix(in srgb, var(--_brand) 20%, #1e1e1e));
+    --_selected-text: var(--ith-selected-text, color-mix(in srgb, var(--_brand) 40%, #ffffff));
+    --_selected-hover-bg: var(--ith-selected-hover-bg, color-mix(in srgb, var(--_brand) 26%, #1e1e1e));
+    --_selected-ring: var(--ith-selected-ring, color-mix(in srgb, var(--_brand) 32%, transparent));
+    --_disabled-bg: var(--ith-disabled-bg, #2d2d2d);
+    --_disabled-opacity: var(--ith-disabled-opacity, 0.5);
+    --_placeholder: var(--ith-placeholder, #a0a0a0);
+    --_group-bg: var(--ith-group-bg, #252525);
+    --_group-text: var(--ith-group-text, #b0b0b0);
+    --_panel-shadow: var(--ith-panel-shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.5));
+    --_search-border: var(--ith-search-border, #3d3d3d);
+    --_action-bg: var(--ith-action-bg, #252525);
+    --_page-bg: var(--ith-page-bg, #1e1e1e);
+  }
+}
+
 /* CSS Variables for theming */
 .ith-dropdown {
-  --ith-bg: #ffffff;
-  --ith-text: #212529;
-  --ith-border: #ced4da;
-  --ith-border-focus: #86b7fe;
-  --ith-shadow-focus: rgba(13, 110, 253, 0.25);
-  --ith-hover-bg: #f8f9fa;
-  --ith-selected-bg: #e8f0fe;
-  --ith-selected-text: #0b5ed7;
-  --ith-selected-hover-bg: #dfeaff;
-  --ith-selected-ring: rgba(13, 110, 253, 0.28);
-  --ith-disabled-bg: #e9ecef;
-  --ith-disabled-opacity: 0.6;
-  --ith-placeholder: #6c757d;
-  --ith-group-bg: #f8f9fa;
-  --ith-group-text: #495057;
-  --ith-panel-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  --ith-search-border: #ced4da;
-  --ith-action-bg: #f8f9fa;
-  --ith-page-bg: #ffffff;
-  
   position: relative;
   width: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -27,61 +81,10 @@
     sans-serif;
 }
 
-/* Dark Theme
-   `:host-context()` is required: the theme attribute is set on <html>/<body>,
-   outside this component, and a plain `[data-theme="dark"] .ith-dropdown`
-   selector would get the component's scoping attribute on the ancestor and
-   never match. */
-:host-context([data-theme="dark"]) .ith-dropdown,
-:host-context(.dark) .ith-dropdown {
-  --ith-bg: #1e1e1e;
-  --ith-text: #e1e1e1;
-  --ith-border: #3d3d3d;
-  --ith-border-focus: #4dabf7;
-  --ith-shadow-focus: rgba(77, 171, 247, 0.25);
-  --ith-hover-bg: #2d2d2d;
-  --ith-selected-bg: #1c2f4d;
-  --ith-selected-text: #8ec1ff;
-  --ith-selected-hover-bg: #223a5e;
-  --ith-selected-ring: rgba(142, 193, 255, 0.32);
-  --ith-disabled-bg: #2d2d2d;
-  --ith-disabled-opacity: 0.5;
-  --ith-placeholder: #a0a0a0;
-  --ith-group-bg: #252525;
-  --ith-group-text: #b0b0b0;
-  --ith-panel-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
-  --ith-search-border: #3d3d3d;
-  --ith-action-bg: #252525;
-  --ith-page-bg: #1e1e1e;
-}
-
 /* Auto theme based on system preference */
-@media (prefers-color-scheme: dark) {
-  :host-context([data-theme="auto"]) .ith-dropdown {
-    --ith-bg: #1e1e1e;
-    --ith-text: #e1e1e1;
-    --ith-border: #3d3d3d;
-    --ith-border-focus: #4dabf7;
-    --ith-shadow-focus: rgba(77, 171, 247, 0.25);
-    --ith-hover-bg: #2d2d2d;
-    --ith-selected-bg: #1c2f4d;
-    --ith-selected-text: #8ec1ff;
-    --ith-selected-hover-bg: #223a5e;
-    --ith-selected-ring: rgba(142, 193, 255, 0.32);
-    --ith-disabled-bg: #2d2d2d;
-    --ith-disabled-opacity: 0.5;
-    --ith-placeholder: #a0a0a0;
-    --ith-group-bg: #252525;
-    --ith-group-text: #b0b0b0;
-    --ith-panel-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
-    --ith-search-border: #3d3d3d;
-    --ith-action-bg: #252525;
-    --ith-page-bg: #1e1e1e;
-  }
-}
 
 .ith-dropdown-disabled {
-  opacity: var(--ith-disabled-opacity);
+  opacity: var(--_disabled-opacity);
   cursor: not-allowed;
 }
 
@@ -90,10 +93,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border: 1px solid var(--ith-border);
+  border: 1px solid var(--_border);
   border-radius: 4px;
-  background-color: var(--ith-bg);
-  color: var(--ith-text);
+  background-color: var(--_bg);
+  color: var(--_text);
   cursor: pointer;
   min-height: 38px;
   user-select: none;
@@ -102,13 +105,13 @@
 
 .ith-dropdown-disabled .ith-dropdown-trigger {
   cursor: not-allowed;
-  background-color: var(--ith-disabled-bg);
+  background-color: var(--_disabled-bg);
 }
 
 .ith-dropdown-open .ith-dropdown-trigger {
-  border-color: var(--ith-border-focus);
+  border-color: var(--_border-focus);
   outline: 0;
-  box-shadow: 0 0 0 0.25rem var(--ith-shadow-focus);
+  box-shadow: 0 0 0 0.25rem var(--_shadow-focus);
 }
 
 .ith-dropdown-display {
@@ -119,7 +122,7 @@
 }
 
 .ith-dropdown-placeholder {
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
 }
 
 .ith-dropdown-actions {
@@ -142,7 +145,7 @@
 .ith-dropdown-clear {
   background: none;
   border: none;
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
   cursor: pointer;
   font-size: 16px;
 }
@@ -152,7 +155,7 @@
 }
 
 .ith-dropdown-arrow {
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
   font-size: 9px;
   transition: transform 0.2s;
 }
@@ -167,53 +170,53 @@
   left: 0;
   right: 0;
   margin-top: 4px;
-  background-color: var(--ith-bg);
-  color: var(--ith-text);
-  border: 1px solid var(--ith-border);
+  background-color: var(--_bg);
+  color: var(--_text);
+  border: 1px solid var(--_border);
   border-radius: 4px;
-  box-shadow: var(--ith-panel-shadow);
+  box-shadow: var(--_panel-shadow);
   z-index: 1000;
   max-width: 100%;
 }
 
 .ith-dropdown-search {
   padding: 8px;
-  border-bottom: 1px solid var(--ith-border);
+  border-bottom: 1px solid var(--_border);
 }
 
 .ith-dropdown-search-input {
   width: 100%;
   padding: 6px 10px;
-  border: 1px solid var(--ith-search-border);
+  border: 1px solid var(--_search-border);
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
-  background-color: var(--ith-bg);
-  color: var(--ith-text);
+  background-color: var(--_bg);
+  color: var(--_text);
 }
 
 .ith-dropdown-search-input:focus {
   outline: 0;
-  border-color: var(--ith-border-focus);
-  box-shadow: 0 0 0 0.25rem var(--ith-shadow-focus);
+  border-color: var(--_border-focus);
+  box-shadow: 0 0 0 0.25rem var(--_shadow-focus);
 }
 
 .ith-dropdown-search-input::placeholder {
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
 }
 
 .ith-dropdown-actions-bar {
   display: flex;
   gap: 8px;
   padding: 6px 8px;
-  border-bottom: 1px solid var(--ith-border);
-  background-color: var(--ith-action-bg);
+  border-bottom: 1px solid var(--_border);
+  background-color: var(--_action-bg);
 }
 
 .ith-dropdown-action-btn {
   background: none;
   border: none;
-  color: var(--ith-selected-text);
+  color: var(--_selected-text);
   cursor: pointer;
   font-size: 13px;
   padding: 2px 6px;
@@ -226,7 +229,7 @@
 .ith-dropdown-loading {
   padding: 12px;
   text-align: center;
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
   font-size: 14px;
 }
 
@@ -237,11 +240,11 @@
 
 .ith-dropdown-group-header {
   padding: 6px 12px;
-  background-color: var(--ith-group-bg);
+  background-color: var(--_group-bg);
   font-weight: 600;
   font-size: 13px;
-  color: var(--ith-group-text);
-  border-bottom: 1px solid var(--ith-border);
+  color: var(--_group-text);
+  border-bottom: 1px solid var(--_border);
   position: sticky;
   top: 0;
 }
@@ -252,31 +255,31 @@
   padding: 8px 12px;
   cursor: pointer;
   gap: 8px;
-  color: var(--ith-text);
+  color: var(--_text);
 }
 
 .ith-dropdown-option:hover:not(.ith-dropdown-option-disabled) {
-  background-color: var(--ith-hover-bg);
+  background-color: var(--_hover-bg);
 }
 
 .ith-dropdown-option-selected {
-  background-color: var(--ith-selected-bg);
-  color: var(--ith-selected-text);
+  background-color: var(--_selected-bg);
+  color: var(--_selected-text);
 }
 
 .ith-dropdown-option-selected:hover {
-  background-color: var(--ith-selected-bg);
-  box-shadow: inset 0 0 0 1px var(--ith-selected-ring);
+  background-color: var(--_selected-bg);
+  box-shadow: inset 0 0 0 1px var(--_selected-ring);
 }
 
 .ith-dropdown-option-active {
-  background-color: var(--ith-hover-bg);
+  background-color: var(--_hover-bg);
   outline: none;
 }
 
 .ith-dropdown-option-active.ith-dropdown-option-selected {
-  background-color: var(--ith-selected-bg);
-  box-shadow: inset 0 0 0 1px var(--ith-selected-ring);
+  background-color: var(--_selected-bg);
+  box-shadow: inset 0 0 0 1px var(--_selected-ring);
 }
 
 .ith-dropdown-option-disabled {
@@ -287,7 +290,7 @@
 .ith-dropdown-load-more {
   padding: 6px 8px;
   text-align: center;
-  border-top: 1px solid var(--ith-border);
+  border-top: 1px solid var(--_border);
 }
 
 .ith-dropdown-load-more .ith-dropdown-action-btn {
@@ -318,7 +321,7 @@
 .ith-dropdown-no-options {
   padding: 12px;
   text-align: center;
-  color: var(--ith-placeholder);
+  color: var(--_placeholder);
   font-size: 14px;
 }
 
@@ -327,22 +330,22 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 8px;
-  border-top: 1px solid var(--ith-border);
-  background-color: var(--ith-action-bg);
+  border-top: 1px solid var(--_border);
+  background-color: var(--_action-bg);
 }
 
 .ith-dropdown-page-btn {
   background: none;
-  border: 1px solid var(--ith-border);
+  border: 1px solid var(--_border);
   border-radius: 4px;
   padding: 2px 8px;
   cursor: pointer;
-  background-color: var(--ith-page-bg);
-  color: var(--ith-text);
+  background-color: var(--_page-bg);
+  color: var(--_text);
 }
 
 .ith-dropdown-page-btn:hover:not(:disabled) {
-  background-color: var(--ith-hover-bg);
+  background-color: var(--_hover-bg);
 }
 
 .ith-dropdown-page-btn:disabled {
@@ -352,5 +355,5 @@
 
 .ith-dropdown-page-info {
   font-size: 13px;
-  color: var(--ith-group-text);
+  color: var(--_group-text);
 }

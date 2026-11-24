@@ -60,38 +60,33 @@ pnpm add @ithouse-bd/ngx-dropdown
 
 ## Quick Start
 
-### 1. Import the Module
+### 1. Import the component
 
-```typescript
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { NgxDropdownModule } from '@ithouse-bd/ngx-dropdown';
-
-import { AppComponent } from './app.component';
-
-@NgModule({
-  declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    NgxDropdownModule
-  ],
-  bootstrap: [AppComponent]
-})
-export class AppModule { }
-```
-
-Or, if you use standalone components, import the component directly — the component is standalone by default (requires **Angular 20+**):
+The library is standalone-only (Angular 20+): there is no `NgModule` wrapper and no
+`CommonModule` dependency. Import the component you need into your standalone component:
 
 ```typescript
 import { Component } from '@angular/core';
-import { DropdownComponent } from '@ithouse-bd/ngx-dropdown';
+import { DropdownComponent, CascaderComponent } from '@ithouse-bd/ngx-dropdown';
 
 @Component({
   selector: 'app-root',
-  imports: [DropdownComponent],
+  imports: [DropdownComponent, CascaderComponent],
   templateUrl: './app.component.html'
 })
 export class AppComponent {}
+```
+
+Boot the app with zoneless change detection — the components are signal-based end to end:
+
+```typescript
+import { provideZonelessChangeDetection } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideZonelessChangeDetection()]
+}).catch((err) => console.error(err));
 ```
 
 ### 2. Use in Template
@@ -133,6 +128,18 @@ export class AppComponent {
 ## Theming
 
 The dropdown comes with built-in support for light, dark, and system theme. It uses CSS custom properties for easy customization.
+
+To match your application's palette, set one brand token — the focus ring, selected row,
+hover tint and action text derive from it in both light and dark mode:
+
+```css
+:root {
+  --ith-dropdown-brand: #0f766e;
+  --ith-cascader-brand: #0f766e;   /* cascader has its own brand token */
+}
+```
+
+All other tokens are public too: set them on `:root`, an ancestor or the component element.
 
 ### Quick Theme Setup
 
@@ -250,6 +257,51 @@ onAreaChange(event: CascaderChangeEvent): void {
 - `disabled: true` on any option greys it out, skips it in keyboard navigation and blocks
   selection (`aria-disabled` is set). A disabled parent disables its whole branch. The
   control itself is disabled through `[disabled]` or the bound form control.
+
+### Custom field names (`bindLabel` / `bindValue` / `bindChildren`)
+
+Real APIs rarely return `{ value, label, children }`. Map your own keys instead of
+reshaping the response:
+
+```typescript
+// GET /api/areas/1/children → [{ id: 7, name: 'Barguna', children: [...] }]
+readonly loadChildren = (node: CascaderOption) =>
+  this.http.get<CascaderOption[]>(`/api/areas/${node.id}/children`);
+```
+
+```html
+<ith-cascader
+  [options]="divisions"
+  bindLabel="name"
+  bindValue="id"
+  bindChildren="children"
+  [loadChildren]="loadChildren"
+  [resolveValue]="resolveValue"
+  [(value)]="areaId">
+</ith-cascader>
+```
+
+| Input | Used for | Without it |
+| --- | --- | --- |
+| `bindLabel` | Every label: trigger, list, breadcrumb, search hits | `label` → `name` → `value` |
+| `bindValue` | `value`, `[(value)]`, `selectionChange.value` | `value` key, else the whole node object |
+| `bindChildren` | Child array of a node | `children` |
+
+`value` is only the **selected node's** value — the parent/child chain is separate:
+
+```typescript
+onAreaChange(event: CascaderChangeEvent): void {
+  event.value;  // 42 (leaf id)
+  event.option; // { id: 42, name: 'Uttara' }
+  event.path;   // [{ id: 1, name: 'Dhaka' }, { id: 5, name: 'Dhaka' }, { id: 42, name: 'Uttara' }]
+}
+```
+
+- Store the leaf id in the form (`areaId`) and derive the chain when the business needs it:
+  `event.path.map((node) => node.id)`.
+- For edit forms, `resolveValue` turns a leaf id back into the path; the trigger then shows
+  the full breadcrumb even when that branch is not loaded.
+- Server search hits use the same keys: `option` and every `path` node may be `{ id, name }`.
 
 ### Async / API-driven levels
 
@@ -891,16 +943,20 @@ You can override the default theme variables to create your own custom theme.
 
 ### Available CSS Variables
 
+`brand X% + colour` = `color-mix(in srgb, var(--ith-dropdown-brand) X%, colour)`. The same
+tokens style `<ith-cascader>`, whose accents derive from `--ith-cascader-brand`.
+
 | Variable | Light Default | Dark Default | Purpose |
 |----------|---------------|--------------|---------|
 | `--ith-bg` | `#ffffff` | `#1e1e1e` | Background color |
 | `--ith-text` | `#212529` | `#e1e1e1` | Text color |
 | `--ith-border` | `#ced4da` | `#3d3d3d` | Border color |
-| `--ith-border-focus` | `#86b7fe` | `#4dabf7` | Focus border color |
-| `--ith-shadow-focus` | `rgba(13, 110, 253, 0.25)` | `rgba(77, 171, 247, 0.25)` | Focus shadow |
+| `--ith-dropdown-brand` | `#0d6efd` | `#4dabf7` | Base brand colour; accent rows below derive from it |
+| `--ith-border-focus` | brand 48% + white | brand | Focus border color |
+| `--ith-shadow-focus` | brand 25% + transparent | brand 25% + transparent | Focus shadow |
 | `--ith-hover-bg` | `#f8f9fa` | `#2d2d2d` | Hover background |
-| `--ith-selected-bg` | `#e7f1ff` | `#1a365d` | Selected item background |
-| `--ith-selected-text` | `#0d6efd` | `#63b3ed` | Selected item text |
+| `--ith-selected-bg` | brand 10% + white | brand 20% + `#1e1e1e` | Selected item background |
+| `--ith-selected-text` | brand 84% + black | brand 40% + white | Selected item text |
 | `--ith-placeholder` | `#6c757d` | `#a0a0a0` | Placeholder text color |
 | `--ith-panel-shadow` | `0 0.5rem 1rem rgba(0, 0, 0, 0.15)` | `0 0.5rem 1rem rgba(0, 0, 0, 0.5)` | Dropdown panel shadow |
 
