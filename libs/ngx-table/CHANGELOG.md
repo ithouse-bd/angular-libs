@@ -4,7 +4,7 @@ All notable changes to `@ithouse-bd/ngx-table` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] — 2026-10-25
+## [1.0.0] — 2026-11-24
 
 ### Added
 
@@ -24,7 +24,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 - Row actions: declarative buttons (icon, class, disabled/hidden rules) and the
   `ithTableRowActions` template.
 - Custom templates: `ithTableCell`, `ithTableHeader`, `ithTableFilter`,
-  `ithTableRowActions`, `ithTableToolbar`, `ithTableFooter`, `ithTableEmpty`.
+  `ithTableRowActions`, `ithTableToolbar`, `ithTableFooter`, `ithTableEmpty`,
+  `ithTableRowMenu`.
+- Copy to clipboard: `copyable`, a per-cell hover button, Ctrl/Cmd+C on a focused cell and
+  the `cellCopy` output.
+- Right-click context menu: `rowContextMenu` output plus the projected `ithTableRowMenu`
+  template, rendered in a floating panel at the pointer (closes on outside click/Escape).
+- Column visibility picker (`showColumnPicker`) with `columnsChange`, persisted together with
+  the comfortable/compact density (`showDensityToggle`) through `storageKey`.
+- Sticky columns: `sticky: 'start' | 'end'` per column, plus `stickySelection` and
+  `stickyActions` for the checkbox/actions columns.
+- Native cell tooltips (`TableColumn.tooltip`, default on) and skeleton rows while loading.
+- Standalone-only: the `NgxTableModule` wrapper was removed; import the component and the
+  template directives directly.
+- Brand theming: a single `--ith-table-brand` token now drives the header, hover, selected
+  rows, filters, footer, focus ring and toolbar accents via `color-mix()`, in light and dark
+  mode.
 - Pagination footer: range summary, total label, centred page window, first/previous/next/last
   buttons, rows-per-page selector.
 - Presentation: `striped`, `bordered`, `dense`, `hoverable`, `stickyHeader`, `maxHeight`,

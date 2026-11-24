@@ -43,15 +43,36 @@ Switching themes at runtime is a single attribute change:
 document.documentElement.setAttribute('data-theme', 'dark');
 ```
 
+## One token = your app's brand
+
+Set a single brand colour and every accent surface (header, hover, selected rows, filters,
+footer, focus ring, copy/column buttons) is derived from it with `color-mix()`. This is the
+recommended way to adapt the table to an existing application palette:
+
+```css
+:root {
+  --ith-table-brand: #0f766e;   /* your primary colour */
+}
+```
+
+That is enough for light **and** dark mode — dark mode derives its own shades from the same
+token. The default is `#5b21b6` (violet). A runtime theme (e.g. the user picks a colour in
+settings) can set the same variable on the element:
+
+```html
+<ith-table [style.--ith-table-brand]="userBrandColor()" [data]="rows" [columns]="cols"></ith-table>
+```
+
+> Needs `color-mix()` (all evergreen browsers since 2023). Every derived token can still be
+> overridden individually, which is what the rest of this guide documents.
+
 ## Quick start
 
 ```css
 /* app-wide */
 ith-table {
-  --ith-table-header-bg: #0f172a;
+  --ith-table-brand: #2563eb;
   --ith-table-header-text: #e2e8f0;
-  --ith-table-accent: #2563eb;
-  --ith-table-accent-soft: #dbeafe;
   --ith-table-radius: 8px;
   --ith-table-cell-padding: 10px 14px;
 }
@@ -71,7 +92,8 @@ ith-table {
 
 ## Variable reference
 
-All variables are defined on the `.ith-table` element.
+These are public tokens: set them on `:root`, any ancestor, or the `ith-table` element itself.
+They resolve on the component host with the light-mode defaults shown below.
 
 ### Surfaces & text
 
@@ -81,29 +103,34 @@ All variables are defined on the `.ith-table` element.
 | `--ith-table-text` | `#1f2937` | `#e7e9f3` | Cell and header-row text |
 | `--ith-table-muted` | `#6b7280` | `#9aa0b5` | Footer text, placeholders, icons |
 | `--ith-table-border` | `#e8eaf0` | `#2a2e42` | Borders and separators |
-| `--ith-table-footer-bg` | `#fcfcff` | `#141622` | Footer background |
-| `--ith-table-filter-bg` | `#faf9ff` | `#1a1d2e` | Filter row background |
+| `--ith-table-footer-bg` | brand 2% + `#fff` | brand 4% + `#12141f` | Footer background |
+| `--ith-table-filter-bg` | brand 3% + `#fff` | brand 6% + `#161826` | Filter row background |
 
 ### Header
 
 | Variable | Light | Dark | Description |
 | --- | --- | --- | --- |
-| `--ith-table-header-bg` | `#5b21b6` | `#4c1d95` | Header bar background |
+| `--ith-table-header-bg` | `var(--ith-table-brand)` | brand 42% + `#0b0d16` | Header bar background |
 | `--ith-table-header-text` | `#ffffff` | `#f3eeff` | Header text and sort icons |
 
 The header is a solid colour so it works with `stickyHeader`; use any CSS colour
-(`#fff`, `rgb(...)`, `var(--brand)`).
+(`#fff`, `rgb(...)`, `var(--brand)`). By default it *is* the brand colour (dark mode darkens it).
 
 ### Accent & interaction
 
 | Variable | Light | Dark | Description |
 | --- | --- | --- | --- |
-| `--ith-table-accent` | `#6d28d9` | `#a78bfa` | Active page, checkboxes, links, action text |
-| `--ith-table-accent-soft` | `#ede9fe` | `#2b2150` | Badges, hover backgrounds |
-| `--ith-table-hover` | `#f6f4ff` | `#1e2236` | Row hover |
-| `--ith-table-selected-bg` | `#f1ecff` | `#241b46` | Selected row background |
-| `--ith-table-striped-bg` | `#fbfbfe` | `#191c2c` | Zebra rows (`striped`) |
-| `--ith-table-focus` | `rgba(109, 40, 217, 0.22)` | `rgba(167, 139, 250, 0.3)` | Focus ring (box-shadow) |
+| `--ith-table-brand` | `#5b21b6` | `#7c3aed` | Base colour — every accent surface below derives from it |
+| `--ith-table-accent` | `var(--ith-table-brand)` | brand 55% + `#fff` | Active page, checkboxes, links, action text |
+| `--ith-table-accent-soft` | brand 12% + `#fff` | brand 26% + `#161826` | Badges, hover backgrounds |
+| `--ith-table-hover` | brand 6% + `#fff` | brand 10% + `#161826` | Row hover |
+| `--ith-table-selected-bg` | brand 10% + `#fff` | brand 20% + `#161826` | Selected row background |
+| `--ith-table-striped-bg` | brand 2% + `#fff` | brand 4% + `#161826` | Zebra rows (`striped`) |
+| `--ith-table-focus` | brand 25% + `transparent` | brand 38% + `transparent` | Focus ring (box-shadow) |
+
+`brand X% + colour` means `color-mix(in srgb, var(--ith-table-brand) X%, colour)`: the brand is
+mixed into that colour, so all of these follow a single `--ith-table-brand` change. Set any of
+them individually to opt out of the derivation.
 
 ### Inputs
 

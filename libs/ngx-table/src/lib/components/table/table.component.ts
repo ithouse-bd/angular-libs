@@ -2,6 +2,7 @@ import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   TemplateRef,
   computed,
   contentChildren,
@@ -9,6 +10,7 @@ import {
   input,
   model,
   output,
+  signal,
   untracked,
 } from '@angular/core';
 
@@ -19,18 +21,23 @@ import {
   TableFooterDirective,
   TableHeaderDirective,
   TableRowActionsDirective,
+  TableRowMenuDirective,
   TableToolbarDirective,
 } from '../../directives/table-template.directives';
 import {
   TableActionEvent,
   TableCellContext,
+  TableCellCopyEvent,
   TableColumn,
+  TableDensity,
   TableFilterContext,
   TableFilterOption,
   TableFilterType,
   TableMode,
   TableRowAction,
   TableRowEvent,
+  TableRowMenuContext,
+  TableRowMenuEvent,
   TableSelectAllScope,
   TableSelectionMode,
   TableSort,
@@ -165,11 +172,40 @@ export class TableComponent<T = any> {
   readonly maxHeight = input<string>('');
 
   /* ---------------------------------------------------------------- */
+  /* Copy / context menu / column presets                             */
+  /* ---------------------------------------------------------------- */
+
+  /** Show a copy button on hover and enable Ctrl/Cmd+C on a focused cell. */
+  readonly copyable = input<boolean>(false);
+  /** Show the toolbar "Columns" popover (visibility switching). */
+  readonly showColumnPicker = input<boolean>(false);
+  /** Show the comfortable/compact density toggle in the toolbar. */
+  readonly showDensityToggle = input<boolean>(false);
+  /**
+   * localStorage key for the saved column/density preset. When set, the user's
+   * choice is restored on the next visit.
+   */
+  readonly storageKey = input<string>('');
+  /** Number of placeholder rows rendered while `loading` and there are no rows. */
+  readonly skeletonRows = input<number>(6);
+  /** Stick the checkbox column to the start edge. */
+  readonly stickySelection = input<boolean>(false);
+  /** Stick the actions column to the end edge. */
+  readonly stickyActions = input<boolean>(false);
+
+  /* ---------------------------------------------------------------- */
   /* Events                                                           */
   /* ---------------------------------------------------------------- */
 
   readonly actionClick = output<TableActionEvent<T>>();
   readonly rowClick = output<TableRowEvent<T>>();
+  /** Emitted after a cell or row was copied to the clipboard. */
+  readonly cellCopy = output<TableCellCopyEvent<T>>();
+  /** Emitted on right-click / context-menu key; the menu is positioned at the pointer. */
+  readonly rowContextMenu = output<TableRowMenuEvent<T>>();
+  /** Visible column keys, emitted whenever the user changes column visibility. */
+  readonly columnsChange = output<string[]>();
+  readonly densityChange = output<TableDensity>();
 
   /* ---------------------------------------------------------------- */
   /* Custom templates                                                 */
@@ -184,6 +220,9 @@ export class TableComponent<T = any> {
   private readonly toolbarDirectives = contentChildren(TableToolbarDirective, { descendants: true });
   private readonly footerDirectives = contentChildren(TableFooterDirective, { descendants: true });
   private readonly emptyDirectives = contentChildren(TableEmptyDirective, { descendants: true });
+  private readonly rowMenuDirectives = contentChildren(TableRowMenuDirective, {
+    descendants: true,
+  });
 
   readonly cellTemplates = computed(() => {
     const templates = new Map<string, TemplateRef<TableCellContext<T>>>();
@@ -221,6 +260,9 @@ export class TableComponent<T = any> {
   readonly emptyTemplate = computed<TemplateRef<any> | undefined>(
     () => this.emptyDirectives()[0]?.template,
   );
+  readonly rowMenuTemplate = computed<TemplateRef<TableRowMenuContext<T>> | undefined>(
+    () => this.rowMenuDirectives()[0]?.template,
+  );
 
   /* ---------------------------------------------------------------- */
   /* Internal state                                                   */
@@ -229,7 +271,33 @@ export class TableComponent<T = any> {
   readonly filters = model<Record<string, string>>({});
   private skipInitialReset = true;
 
+  /** Columns hidden at runtime (on top of `column.hidden`), persisted via `storageKey`. */
+  private readonly hiddenColumnKeys = signal<ReadonlySet<string>>(new Set());
+  private readonly density = signal<TableDensity>('comfortable');
+  readonly compact = computed(() => this.dense() || this.density() === 'compact');
+  readonly columnPickerOpen = signal(false);
+  /** Right-click menu position; `null` when closed. */
+  readonly menuState = signal<{
+    row: T;
+    index: number;
+    x: number;
+    y: number;
+  } | null>(null);
+  /** `${rowIndex}:${columnKey}` of the cell that was just copied (shows a check icon). */
+  readonly copiedCell = signal<string | null>(null);
+  readonly skeletonIndexes = computed(() =>
+    Array.from({ length: Math.max(0, this.skeletonRows()) }, (_, index) => index),
+  );
+  private copyTimer?: ReturnType<typeof setTimeout>;
+
   constructor() {
+    this.restorePreset();
+
+    // Persist the preset whenever the user changes it.
+    effect(() => {
+      const preset = { hidden: [...this.hiddenColumnKeys()], density: this.density() };
+      untracked(() => this.persistPreset(preset));
+    });
     // In client mode any change to the query starts again from the first page. In server
     // mode the consumer owns the page (and fetches on every `pageChange`), so resetting
     // here would fire a second request for the same query change.
@@ -261,7 +329,10 @@ export class TableComponent<T = any> {
 
   readonly isServer = computed(() => this.mode() === 'server');
 
-  readonly visibleColumns = computed(() => this.columns().filter((column) => !column.hidden));
+  readonly visibleColumns = computed(() => {
+    const hidden = this.hiddenColumnKeys();
+    return this.columns().filter((column) => !column.hidden && !hidden.has(column.key));
+  });
 
   readonly selectable = computed(() => this.selectionMode() !== 'none');
 
@@ -599,6 +670,8 @@ export class TableComponent<T = any> {
 
   /** `Enter` / `Space` activate a focusable row exactly like a mouse click. */
   onRowKeydown(row: T, index: number, event: KeyboardEvent): void {
+    this.onRowContextMenuKey(row, index, event);
+    if (event.defaultPrevented) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     if (isInteractiveTarget(event.target)) return;
     if (!this.rowClickable() && !this.selectOnRowClick()) return;
@@ -656,11 +729,202 @@ export class TableComponent<T = any> {
     return [this.alignClass(column), column.headerClass ?? ''].filter((value) => !!value);
   }
 
+  /** Flat class list for a header cell (NgClass rejects nested arrays). */
+  headerClasses(column: TableColumn<T>): string[] {
+    return [...this.headerClassFor(column), this.stickyClassFor(column)].filter((value) => !!value);
+  }
+
+  filterClasses(column: TableColumn<T>): string[] {
+    return [this.alignClass(column), this.stickyClassFor(column)].filter((value) => !!value);
+  }
+
+  /** Flat class list for a body cell, including dynamic `cellClass` output. */
+  cellClasses(row: T, column: TableColumn<T>, index: number): unknown[] {
+    const extra = this.cellClassFor(row, column, index);
+    const values = Array.isArray(extra) ? extra : [extra];
+    return [this.alignClass(column), this.stickyClassFor(column), ...values].filter(
+      (value) => !!value,
+    );
+  }
+
   columnStyle(column: TableColumn<T>): Record<string, string> {
     const style: Record<string, string> = {};
     if (column.width) style['width'] = column.width;
     if (column.minWidth) style['min-width'] = column.minWidth;
+    if (column.sticky === 'start') style['left'] = this.stickyStartOffset(column);
+    if (column.sticky === 'end') style['right'] = '0px';
     return style;
+  }
+
+  stickyClassFor(column: TableColumn<T>): string {
+    if (column.sticky === 'start') return 'ith-table-sticky-start';
+    if (column.sticky === 'end') return 'ith-table-sticky-end';
+    return '';
+  }
+
+  /** Full text for the native tooltip; `null` disables it for a column. */
+  tooltipText(row: T, column: TableColumn<T>, index: number): string | null {
+    if (column.tooltip === false) return null;
+    return this.cellText(row, column, index) || null;
+  }
+
+  private stickyStartOffset(column: TableColumn<T>): string {
+    let offset = this.selectable() && this.stickySelection() ? 44 : 0;
+    for (const candidate of this.visibleColumns()) {
+      if (candidate.key === column.key) break;
+      if (candidate.sticky === 'start') offset += this.columnWidthPx(candidate);
+    }
+    return `${offset}px`;
+  }
+
+  private columnWidthPx(column: TableColumn<T>): number {
+    const width = column.width ?? '';
+    return width.endsWith('px') ? Number.parseFloat(width) || 0 : 0;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Copy / context menu                                              */
+  /* ---------------------------------------------------------------- */
+
+  copyCell(row: T, column: TableColumn<T>, index: number, event?: Event): void {
+    event?.stopPropagation();
+    const value = this.cellText(row, column, index);
+    this.copyText(value, `${index}:${column.key}`);
+    this.cellCopy.emit({ value, row, index, column });
+  }
+
+  copyRow(row: T, index: number, event?: Event): void {
+    event?.stopPropagation();
+    const value = this.visibleColumns()
+      .map((column) => this.cellText(row, column, index))
+      .join('\t');
+    this.copyText(value, `${index}:__row`);
+    this.cellCopy.emit({ value, row, index, column: null });
+  }
+
+  isCellCopied(index: number, column: TableColumn<T>): boolean {
+    return this.copiedCell() === `${index}:${column.key}`;
+  }
+
+  /** Ctrl/Cmd+C while a cell has focus copies that cell. */
+  onCellKeydown(row: T, column: TableColumn<T>, index: number, event: KeyboardEvent): void {
+    if (!this.copyable()) return;
+    if (event.key.toLowerCase() !== 'c' || !(event.ctrlKey || event.metaKey)) return;
+    if (isInteractiveTarget(event.target)) return;
+    event.preventDefault();
+    this.copyCell(row, column, index);
+  }
+
+  onRowContextMenu(row: T, index: number, event: MouseEvent): void {
+    this.rowContextMenu.emit({ row, index, x: event.clientX, y: event.clientY, event });
+    if (!this.rowMenuTemplate()) return;
+    event.preventDefault();
+    this.menuState.set({ row, index, x: event.clientX, y: event.clientY });
+  }
+
+  /** Keyboard path for the same menu (context-menu key / Shift+F10). */
+  onRowContextMenuKey(row: T, index: number, event: KeyboardEvent): void {
+    if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+    if (!this.rowMenuTemplate()) return;
+    event.preventDefault();
+    const target = event.target as HTMLElement | null;
+    const rect = target?.getBoundingClientRect();
+    const x = rect ? rect.left + Math.min(24, rect.width / 2) : 0;
+    const y = rect ? rect.bottom : 0;
+    this.rowContextMenu.emit({ row, index, x, y, event });
+    this.menuState.set({ row, index, x, y });
+  }
+
+  closeRowMenu(): void {
+    this.menuState.set(null);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Column preset / density                                          */
+  /* ---------------------------------------------------------------- */
+
+  isColumnVisible(column: TableColumn<T>): boolean {
+    return !column.hidden && !this.hiddenColumnKeys().has(column.key);
+  }
+
+  setColumnVisible(key: string, visible: boolean): void {
+    const next = new Set(this.hiddenColumnKeys());
+    if (visible) next.delete(key);
+    else next.add(key);
+
+    // Never hide every column: keep at least one visible.
+    const visibleCount = this.columns().filter(
+      (column) => !column.hidden && !next.has(column.key),
+    ).length;
+    if (visibleCount === 0) return;
+
+    this.hiddenColumnKeys.set(next);
+    this.columnsChange.emit(this.visibleColumns().map((column) => column.key));
+  }
+
+  resetColumns(): void {
+    this.hiddenColumnKeys.set(new Set());
+    this.columnsChange.emit(this.visibleColumns().map((column) => column.key));
+  }
+
+  toggleColumnPicker(): void {
+    this.columnPickerOpen.update((open) => !open);
+  }
+
+  toggleDensity(): void {
+    this.density.update((density) => (density === 'compact' ? 'comfortable' : 'compact'));
+    this.densityChange.emit(this.density());
+  }
+
+  private copyText(value: string, key: string): void {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(value).catch(() => undefined);
+    }
+    this.copiedCell.set(key);
+    if (this.copyTimer) clearTimeout(this.copyTimer);
+    this.copyTimer = setTimeout(() => this.copiedCell.set(null), 1400);
+  }
+
+  private restorePreset(): void {
+    const preset = this.readPreset();
+    if (!preset) return;
+    if (Array.isArray(preset.hidden)) this.hiddenColumnKeys.set(new Set(preset.hidden));
+    if (preset.density === 'compact' || preset.density === 'comfortable') {
+      this.density.set(preset.density);
+    }
+  }
+
+  private readPreset(): { hidden?: string[]; density?: TableDensity } | null {
+    const key = this.storageKey();
+    if (!key || typeof localStorage === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private persistPreset(preset: { hidden: string[]; density: TableDensity }): void {
+    const key = this.storageKey();
+    if (!key || typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(key, JSON.stringify(preset));
+    } catch {
+      // Storage disabled (private mode) — the preset simply stays in memory.
+    }
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeRowMenu();
+    this.columnPickerOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onDocumentEscape(): void {
+    this.closeRowMenu();
+    this.columnPickerOpen.set(false);
   }
 
   alignClass(column: TableColumn<T>): string {

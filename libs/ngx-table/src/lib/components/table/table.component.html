@@ -4,43 +4,114 @@
   [class.ith-table-dense]="dense()"
   [class.ith-table-striped]="striped()"
   [class.ith-table-hoverable]="hoverable()"
-  [class.ith-table-sticky]="stickyHeader()">
+  [class.ith-table-sticky]="stickyHeader()"
+  [class.ith-table-compact]="compact()">
   <!-- Toolbar -->
   @if (showToolbar()) {
     <div class="ith-table-toolbar">
-      <div class="ith-table-toolbar-main">
-        @if (title()) {
-          <h3 class="ith-table-title">{{ title() }}</h3>
-        }
-        <span class="ith-table-badge">{{ totalRows() }} {{ countSuffix() }}</span>
-        @if (selected().length > 0) {
-          <span class="ith-table-badge ith-table-badge-accent">{{ selected().length }} selected</span>
-        }
-        @if (toolbarTemplate(); as toolbarTpl) {
-          <ng-container
-            [ngTemplateOutlet]="toolbarTpl"
-            [ngTemplateOutletContext]="toolbarContext()" />
-        }
-      </div>
-
-      @if (searchable()) {
-        <div class="ith-table-search">
-          <svg class="ith-table-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.6-3.6" />
-          </svg>
-          <input
-            type="search"
-            class="ith-table-search-input"
-            [value]="search()"
-            [attr.placeholder]="searchPlaceholder()"
-            [attr.aria-label]="searchPlaceholder()"
-            (input)="onSearchInput($any($event.target).value)" />
-          @if (search()) {
-            <button type="button" class="ith-table-search-clear" (click)="clearSearch()" aria-label="Clear search">×</button>
+      <div class="ith-table-toolbar-inner">
+        <div class="ith-table-toolbar-main">
+          @if (title()) {
+            <h3 class="ith-table-title">{{ title() }}</h3>
+          }
+          <span class="ith-table-badge">{{ totalRows() }} {{ countSuffix() }}</span>
+          @if (selected().length > 0) {
+            <span class="ith-table-badge ith-table-badge-accent">{{ selected().length }} selected</span>
+          }
+          @if (toolbarTemplate(); as toolbarTpl) {
+            <ng-container
+              [ngTemplateOutlet]="toolbarTpl"
+              [ngTemplateOutletContext]="toolbarContext()" />
           }
         </div>
-      }
+
+        <div class="ith-table-toolbar-spacer"></div>
+
+        <div class="ith-table-toolbar-actions">
+          @if (showColumnPicker()) {
+            <div class="ith-table-columns" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="ith-table-tool-btn"
+                aria-haspopup="true"
+                [attr.aria-expanded]="columnPickerOpen()"
+                (click)="toggleColumnPicker()">
+                <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="7" height="16" rx="1.5" />
+                  <rect x="14" y="4" width="7" height="16" rx="1.5" />
+                </svg>
+                <span>Columns</span>
+              </button>
+              @if (columnPickerOpen()) {
+                <div class="ith-table-columns-popover" role="dialog" aria-label="Visible columns">
+                  <div class="ith-table-columns-header">Show columns</div>
+                  <div class="ith-table-columns-list">
+                    @for (column of columns(); track column.key) {
+                      <label class="ith-table-columns-item">
+                        <input
+                          type="checkbox"
+                          class="ith-table-checkbox"
+                          [checked]="isColumnVisible(column)"
+                          [disabled]="column.hidden"
+                          (change)="setColumnVisible(column.key, $any($event.target).checked)" />
+                        <span>{{ column.header ?? column.key }}</span>
+                      </label>
+                    }
+                  </div>
+                  <div class="ith-table-columns-footer">
+                    <button type="button" class="ith-table-columns-reset" (click)="resetColumns()">
+                      Reset columns
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          @if (showDensityToggle()) {
+            <button
+              type="button"
+              class="ith-table-tool-btn"
+              [attr.aria-pressed]="compact()"
+              (click)="toggleDensity()">
+              @if (compact()) {
+                <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+                <span>Comfortable</span>
+              } @else {
+                <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                  <path d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                <span>Compact</span>
+              }
+            </button>
+          }
+
+          @if (searchable()) {
+            <div class="ith-table-search">
+              <svg class="ith-table-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.6-3.6" />
+              </svg>
+              <input
+                type="search"
+                class="ith-table-search-input"
+                [value]="search()"
+                [attr.placeholder]="searchPlaceholder()"
+                [attr.aria-label]="searchPlaceholder()"
+                (input)="onSearchInput($any($event.target).value)" />
+              @if (search()) {
+                <button type="button" class="ith-table-search-clear" (click)="clearSearch()" aria-label="Clear search">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
     </div>
   }
 
@@ -50,7 +121,11 @@
       <thead>
         <tr class="ith-table-head-row">
           @if (selectable()) {
-            <th scope="col" class="ith-table-select-cell">
+            <th
+              scope="col"
+              class="ith-table-select-cell"
+              [class.ith-table-sticky-start]="stickySelection()"
+              [style.left]="stickySelection() ? '0px' : null">
               @if (selectionMode() === 'multi') {
                 <input
                   type="checkbox"
@@ -67,7 +142,7 @@
             <th
               scope="col"
               class="ith-table-th"
-              [ngClass]="headerClassFor(column)"
+              [ngClass]="headerClasses(column)"
               [style]="columnStyle(column)"
               [attr.aria-sort]="isSortable(column) ? ariaSort(column) : null">
               @if (headerTemplate(column); as headerTpl) {
@@ -94,7 +169,12 @@
           }
 
           @if (hasActionsColumn()) {
-            <th scope="col" class="ith-table-th ith-table-actions-head" [style.width]="actionsWidth()">
+            <th
+              scope="col"
+              class="ith-table-th ith-table-actions-head"
+              [class.ith-table-sticky-end]="stickyActions()"
+              [style.width]="actionsWidth()"
+              [style.right]="stickyActions() ? '0px' : null">
               {{ actionsHeader() }}
             </th>
           }
@@ -103,10 +183,16 @@
         @if (showFilters()) {
           <tr class="ith-table-filter-row">
             @if (selectable()) {
-              <th class="ith-table-select-cell"></th>
+              <th
+                class="ith-table-select-cell"
+                [class.ith-table-sticky-start]="stickySelection()"
+                [style.left]="stickySelection() ? '0px' : null"></th>
             }
             @for (column of visibleColumns(); track column.key) {
-              <th class="ith-table-filter-cell" [ngClass]="alignClass(column)">
+              <th
+                class="ith-table-filter-cell"
+                [ngClass]="filterClasses(column)"
+                [style]="columnStyle(column)">
                 @if (filterTemplate(column); as filterTpl) {
                   <ng-container
                     [ngTemplateOutlet]="filterTpl"
@@ -156,7 +242,10 @@
               </th>
             }
             @if (hasActionsColumn()) {
-              <th class="ith-table-filter-cell"></th>
+              <th
+                class="ith-table-filter-cell"
+                [class.ith-table-sticky-end]="stickyActions()"
+                [style.right]="stickyActions() ? '0px' : null"></th>
             }
           </tr>
         }
@@ -164,10 +253,29 @@
 
       <tbody>
         @if (loading() && pagedRows().length === 0) {
+          @for (skeleton of skeletonIndexes(); track skeleton) {
+            <tr class="ith-table-skeleton-row" aria-hidden="true">
+              @if (selectable()) {
+                <td
+                  class="ith-table-select-cell"
+                  [class.ith-table-sticky-start]="stickySelection()"
+                  [style.left]="stickySelection() ? '0px' : null">
+                  <span class="ith-table-skeleton is-check"></span>
+                </td>
+              }
+              @for (column of visibleColumns(); track column.key) {
+                <td class="ith-table-td">
+                  <span class="ith-table-skeleton"></span>
+                </td>
+              }
+              @if (hasActionsColumn()) {
+                <td class="ith-table-actions-cell"><span class="ith-table-skeleton"></span></td>
+              }
+            </tr>
+          }
           <tr>
-            <td class="ith-table-status" [attr.colspan]="emptyColspan()" aria-live="polite">
-              <span class="ith-table-spinner" aria-hidden="true"></span>
-              <span>{{ loadingText() }}</span>
+            <td class="ith-table-visually-hidden" [attr.colspan]="emptyColspan()" aria-live="polite">
+              {{ loadingText() }}
             </td>
           </tr>
         } @else if (pagedRows().length === 0) {
@@ -192,7 +300,7 @@
             </td>
           </tr>
         } @else {
-          @for (row of pagedRows(); track trackRow($index, row)) {
+          @for (row of pagedRows(); track trackRow($index, row); let rowIndex = $index) {
             <tr
               class="ith-table-row"
               [ngClass]="rowClassFor(row, $index)"
@@ -200,9 +308,13 @@
               [attr.tabindex]="rowClickable() || selectOnRowClick() ? 0 : null"
               [attr.aria-selected]="selectable() ? isSelected(row) : null"
               (click)="onRowClick(row, $index, $event)"
-              (keydown)="onRowKeydown(row, $index, $event)">
+              (keydown)="onRowKeydown(row, $index, $event)"
+              (contextmenu)="onRowContextMenu(row, $index, $event)">
               @if (selectable()) {
-                <td class="ith-table-select-cell">
+                <td
+                  class="ith-table-select-cell"
+                  [class.ith-table-sticky-start]="stickySelection()"
+                  [style.left]="stickySelection() ? '0px' : null">
                   <input
                     type="checkbox"
                     class="ith-table-checkbox"
@@ -214,19 +326,43 @@
               }
 
               @for (column of visibleColumns(); track column.key) {
-                <td class="ith-table-td" [ngClass]="[alignClass(column), cellClassFor(row, column, $index)]">
+                <td
+                  class="ith-table-td"
+                  [class.ith-table-copyable]="copyable()"
+                  [ngClass]="cellClasses(row, column, rowIndex)"
+                  [style]="columnStyle(column)"
+                  [attr.title]="tooltipText(row, column, rowIndex)"
+                  [attr.tabindex]="copyable() ? 0 : null"
+                  (keydown)="onCellKeydown(row, column, rowIndex, $event)">
                   @if (cellTemplate(column); as cellTpl) {
                     <ng-container
                       [ngTemplateOutlet]="cellTpl"
-                      [ngTemplateOutletContext]="cellContext(row, column, $index)" />
+                      [ngTemplateOutletContext]="cellContext(row, column, rowIndex)" />
                   } @else {
-                    {{ cellText(row, column, $index) }}
+                    {{ cellText(row, column, rowIndex) }}
+                  }
+                  @if (copyable()) {
+                    <button
+                      type="button"
+                      class="ith-table-copy"
+                      [class.is-copied]="isCellCopied(rowIndex, column)"
+                      [attr.aria-label]="'Copy ' + (column.header ?? column.key)"
+                      (click)="copyCell(row, column, rowIndex, $event)">
+                      @if (isCellCopied(rowIndex, column)) {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7" /></svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M15 5.5A2.5 2.5 0 0 0 12.5 3H6a2 2 0 0 0-2 2v7.5A2.5 2.5 0 0 0 6.5 15" /></svg>
+                      }
+                    </button>
                   }
                 </td>
               }
 
               @if (hasActionsColumn()) {
-                <td class="ith-table-actions-cell">
+                <td
+                  class="ith-table-actions-cell"
+                  [class.ith-table-sticky-end]="stickyActions()"
+                  [style.right]="stickyActions() ? '0px' : null">
                   @if (rowActionsTemplate(); as actionsTpl) {
                     <ng-container
                       [ngTemplateOutlet]="actionsTpl"
@@ -264,6 +400,22 @@
       </div>
     }
   </div>
+
+  <!-- Right-click menu (projected template, positioned at the pointer) -->
+  @if (menuState(); as menu) {
+    <div
+      class="ith-table-menu"
+      role="menu"
+      [style.left.px]="menu.x"
+      [style.top.px]="menu.y"
+      (click)="closeRowMenu(); $event.stopPropagation()">
+      @if (rowMenuTemplate(); as menuTpl) {
+        <ng-container
+          [ngTemplateOutlet]="menuTpl"
+          [ngTemplateOutletContext]="{ $implicit: menu.row, row: menu.row, index: menu.index }" />
+      }
+    </div>
+  }
 
   <!-- Footer -->
   @if (showFooter()) {

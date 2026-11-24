@@ -6,6 +6,7 @@ import {
   TableFooterContext,
   TableHeaderContext,
   TableRowActionsContext,
+  TableRowMenuContext,
   TableToolbarContext,
 } from '../models/table.models';
 
@@ -61,4 +62,18 @@ export class TableFooterDirective {
 @Directive({ selector: '[ithTableEmpty]' })
 export class TableEmptyDirective {
   constructor(readonly template: TemplateRef<TableToolbarContext>) {}
+}
+
+/**
+ * Custom right-click menu, rendered in a floating panel at the pointer.
+ *
+ * ```html
+ * <ng-template ithTableRowMenu let-row>
+ *   <button type="button" (click)="open(row)">Open</button>
+ * </ng-template>
+ * ```
+ */
+@Directive({ selector: '[ithTableRowMenu]' })
+export class TableRowMenuDirective {
+  constructor(readonly template: TemplateRef<TableRowMenuContext>) {}
 }

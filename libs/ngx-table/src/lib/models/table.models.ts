@@ -18,6 +18,9 @@ export type TableSortDirection = 'asc' | 'desc';
 /** Control rendered in the filter row for a column. */
 export type TableFilterType = 'text' | 'number' | 'date' | 'select';
 
+/** Row height mode toggled from the toolbar. */
+export type TableDensity = 'comfortable' | 'compact';
+
 /** Option of a `select` filter. */
 export interface TableFilterOption {
   label: string;
@@ -76,6 +79,16 @@ export interface TableColumn<T = any> {
   searchValue?: (row: T) => string;
   /** Custom text used by the per-column filter. Defaults to the formatted cell value. */
   filterValue?: (row: T) => string;
+  /**
+   * Show the full cell text as a native tooltip (for truncated values). Defaults to `true`;
+   * set to `false` on columns where a tooltip would be noise.
+   */
+  tooltip?: boolean;
+  /**
+   * Keep the column at the start/end edge while the table scrolls horizontally.
+   * Sticky columns should declare a `width` so the next sticky column can be offset.
+   */
+  sticky?: 'start' | 'end';
 }
 
 /** Declarative row action button rendered in the actions column. */
@@ -103,6 +116,27 @@ export interface TableRowEvent<T = any> {
   row: T;
   index: number;
   /** Mouse click, or the keyboard event when a clickable row is activated with Enter/Space. */
+  event: Event;
+}
+
+/** Emitted when a cell (or row) is copied to the clipboard. */
+export interface TableCellCopyEvent<T = any> {
+  /** Plain text written to the clipboard. */
+  value: string;
+  row: T;
+  index: number;
+  /** `null` when the whole row was copied. */
+  column: TableColumn<T> | null;
+}
+
+/** Emitted on right-click (or the context-menu key) on a row. */
+export interface TableRowMenuEvent<T = any> {
+  row: T;
+  index: number;
+  /** Position of the pointer, for consumer-owned menus. */
+  x: number;
+  y: number;
+  /** The originating event (`MouseEvent` or `KeyboardEvent`). */
   event: Event;
 }
 
@@ -134,6 +168,13 @@ export interface TableFilterContext<T = any> {
   value: string;
   column: TableColumn<T>;
   setValue: (value: string) => void;
+}
+
+/** Context of the projected `#ithTableRowMenu` template. */
+export interface TableRowMenuContext<T = any> {
+  $implicit: T;
+  row: T;
+  index: number;
 }
 
 export interface TableToolbarContext<T = any> {

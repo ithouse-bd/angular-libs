@@ -1,5 +1,78 @@
 :host {
   display: block;
+
+  /* Public tokens can be set on `:root`, any ancestor, or the host element itself;
+     these private tokens resolve them with the light-mode defaults. */
+  --_brand: var(--ith-table-brand, #5b21b6);
+  --_bg: var(--ith-table-bg, #ffffff);
+  --_text: var(--ith-table-text, #1f2937);
+  --_muted: var(--ith-table-muted, #6b7280);
+  --_border: var(--ith-table-border, #e8eaf0);
+  --_header-bg: var(--ith-table-header-bg, var(--_brand));
+  --_header-text: var(--ith-table-header-text, #ffffff);
+  --_hover: var(--ith-table-hover, color-mix(in srgb, var(--_brand) 6%, #ffffff));
+  --_selected-bg: var(--ith-table-selected-bg, color-mix(in srgb, var(--_brand) 10%, #ffffff));
+  --_striped-bg: var(--ith-table-striped-bg, color-mix(in srgb, var(--_brand) 2%, #ffffff));
+  --_accent: var(--ith-table-accent, var(--_brand));
+  --_accent-soft: var(--ith-table-accent-soft, color-mix(in srgb, var(--_brand) 12%, #ffffff));
+  --_input-bg: var(--ith-table-input-bg, #ffffff);
+  --_input-border: var(--ith-table-input-border, #dfe3ec);
+  --_footer-bg: var(--ith-table-footer-bg, color-mix(in srgb, var(--_brand) 2%, #ffffff));
+  --_filter-bg: var(--ith-table-filter-bg, color-mix(in srgb, var(--_brand) 3%, #ffffff));
+  --_overlay: var(--ith-table-overlay, rgba(255, 255, 255, 0.72));
+  --_radius: var(--ith-table-radius, 14px);
+  --_shadow: var(--ith-table-shadow, 0 18px 40px -28px rgba(24, 20, 60, 0.55));
+  --_focus: var(--ith-table-focus, color-mix(in srgb, var(--_brand) 25%, transparent));
+  --_cell-padding: var(--ith-table-cell-padding, 12px 16px);
+  --_font-size: var(--ith-table-font-size, 14px);
+  --_header-font-size: var(--ith-table-header-font-size, 13px);
+}
+
+:host-context([data-theme='dark']),
+:host-context(.dark) {
+  --_brand: var(--ith-table-brand, #7c3aed);
+  --_bg: var(--ith-table-bg, #161826);
+  --_text: var(--ith-table-text, #e7e9f3);
+  --_muted: var(--ith-table-muted, #9aa0b5);
+  --_border: var(--ith-table-border, #2a2e42);
+  --_header-bg: var(--ith-table-header-bg, color-mix(in srgb, var(--_brand) 42%, #0b0d16));
+  --_header-text: var(--ith-table-header-text, #f3eeff);
+  --_hover: var(--ith-table-hover, color-mix(in srgb, var(--_brand) 10%, #161826));
+  --_selected-bg: var(--ith-table-selected-bg, color-mix(in srgb, var(--_brand) 20%, #161826));
+  --_striped-bg: var(--ith-table-striped-bg, color-mix(in srgb, var(--_brand) 4%, #161826));
+  --_accent: var(--ith-table-accent, color-mix(in srgb, var(--_brand) 55%, #ffffff));
+  --_accent-soft: var(--ith-table-accent-soft, color-mix(in srgb, var(--_brand) 26%, #161826));
+  --_input-bg: var(--ith-table-input-bg, #1b1e30);
+  --_input-border: var(--ith-table-input-border, #343a52);
+  --_footer-bg: var(--ith-table-footer-bg, color-mix(in srgb, var(--_brand) 4%, #12141f));
+  --_filter-bg: var(--ith-table-filter-bg, color-mix(in srgb, var(--_brand) 6%, #161826));
+  --_overlay: var(--ith-table-overlay, rgba(17, 19, 30, 0.72));
+  --_shadow: var(--ith-table-shadow, 0 18px 40px -28px rgba(0, 0, 0, 0.85));
+  --_focus: var(--ith-table-focus, color-mix(in srgb, var(--_brand) 38%, transparent));
+}
+
+@media (prefers-color-scheme: dark) {
+  :host-context([data-theme='auto']) {
+    --_brand: var(--ith-table-brand, #7c3aed);
+    --_bg: var(--ith-table-bg, #161826);
+    --_text: var(--ith-table-text, #e7e9f3);
+    --_muted: var(--ith-table-muted, #9aa0b5);
+    --_border: var(--ith-table-border, #2a2e42);
+    --_header-bg: var(--ith-table-header-bg, color-mix(in srgb, var(--_brand) 42%, #0b0d16));
+    --_header-text: var(--ith-table-header-text, #f3eeff);
+    --_hover: var(--ith-table-hover, color-mix(in srgb, var(--_brand) 10%, #161826));
+    --_selected-bg: var(--ith-table-selected-bg, color-mix(in srgb, var(--_brand) 20%, #161826));
+    --_striped-bg: var(--ith-table-striped-bg, color-mix(in srgb, var(--_brand) 4%, #161826));
+    --_accent: var(--ith-table-accent, color-mix(in srgb, var(--_brand) 55%, #ffffff));
+    --_accent-soft: var(--ith-table-accent-soft, color-mix(in srgb, var(--_brand) 26%, #161826));
+    --_input-bg: var(--ith-table-input-bg, #1b1e30);
+    --_input-border: var(--ith-table-input-border, #343a52);
+    --_footer-bg: var(--ith-table-footer-bg, color-mix(in srgb, var(--_brand) 4%, #12141f));
+    --_filter-bg: var(--ith-table-filter-bg, color-mix(in srgb, var(--_brand) 6%, #161826));
+    --_overlay: var(--ith-table-overlay, rgba(17, 19, 30, 0.72));
+    --_shadow: var(--ith-table-shadow, 0 18px 40px -28px rgba(0, 0, 0, 0.85));
+    --_focus: var(--ith-table-focus, color-mix(in srgb, var(--_brand) 38%, transparent));
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -7,150 +80,100 @@
 /* ------------------------------------------------------------------ */
 
 .ith-table {
-  --ith-table-bg: #ffffff;
-  --ith-table-text: #1f2937;
-  --ith-table-muted: #6b7280;
-  --ith-table-border: #e8eaf0;
-  --ith-table-header-bg: #5b21b6;
-  --ith-table-header-text: #ffffff;
-  --ith-table-hover: #f6f4ff;
-  --ith-table-selected-bg: #f1ecff;
-  --ith-table-striped-bg: #fbfbfe;
-  --ith-table-accent: #6d28d9;
-  --ith-table-accent-soft: #ede9fe;
-  --ith-table-input-bg: #ffffff;
-  --ith-table-input-border: #dfe3ec;
-  --ith-table-footer-bg: #fcfcff;
-  --ith-table-filter-bg: #faf9ff;
-  --ith-table-overlay: rgba(255, 255, 255, 0.72);
-  --ith-table-radius: 14px;
-  --ith-table-shadow: 0 18px 40px -28px rgba(24, 20, 60, 0.55);
-  --ith-table-focus: rgba(109, 40, 217, 0.22);
-  --ith-table-cell-padding: 12px 16px;
-  --ith-table-font-size: 14px;
-  --ith-table-header-font-size: 13px;
-
   display: block;
   position: relative;
-  background: var(--ith-table-bg);
-  color: var(--ith-table-text);
-  border: 1px solid var(--ith-table-border);
-  border-radius: var(--ith-table-radius);
-  box-shadow: var(--ith-table-shadow);
+  background: var(--_bg);
+  color: var(--_text);
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius);
+  box-shadow: var(--_shadow);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  font-size: var(--ith-table-font-size);
+  font-size: var(--_font-size);
   overflow: hidden;
 }
 
-/* Dark theme — the attribute/class sits on <html> or <body>, outside the component,
-   so `:host-context()` is required for the selector to match. */
-:host-context([data-theme='dark']) .ith-table,
-:host-context(.dark) .ith-table {
-  --ith-table-bg: #161826;
-  --ith-table-text: #e7e9f3;
-  --ith-table-muted: #9aa0b5;
-  --ith-table-border: #2a2e42;
-  --ith-table-header-bg: #4c1d95;
-  --ith-table-header-text: #f3eeff;
-  --ith-table-hover: #1e2236;
-  --ith-table-selected-bg: #241b46;
-  --ith-table-striped-bg: #191c2c;
-  --ith-table-accent: #a78bfa;
-  --ith-table-accent-soft: #2b2150;
-  --ith-table-input-bg: #1b1e30;
-  --ith-table-input-border: #343a52;
-  --ith-table-footer-bg: #141622;
-  --ith-table-filter-bg: #1a1d2e;
-  --ith-table-overlay: rgba(17, 19, 30, 0.72);
-  --ith-table-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.85);
-  --ith-table-focus: rgba(167, 139, 250, 0.3);
-}
-
-@media (prefers-color-scheme: dark) {
-  :host-context([data-theme='auto']) .ith-table {
-    --ith-table-bg: #161826;
-    --ith-table-text: #e7e9f3;
-    --ith-table-muted: #9aa0b5;
-    --ith-table-border: #2a2e42;
-    --ith-table-header-bg: #4c1d95;
-    --ith-table-header-text: #f3eeff;
-    --ith-table-hover: #1e2236;
-    --ith-table-selected-bg: #241b46;
-    --ith-table-striped-bg: #191c2c;
-    --ith-table-accent: #a78bfa;
-    --ith-table-accent-soft: #2b2150;
-    --ith-table-input-bg: #1b1e30;
-    --ith-table-input-border: #343a52;
-    --ith-table-footer-bg: #141622;
-    --ith-table-filter-bg: #1a1d2e;
-    --ith-table-overlay: rgba(17, 19, 30, 0.72);
-    --ith-table-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.85);
-    --ith-table-focus: rgba(167, 139, 250, 0.3);
-  }
-}
 
 /* ------------------------------------------------------------------ */
 /* Toolbar                                                             */
 /* ------------------------------------------------------------------ */
 
 .ith-table-toolbar {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--_border);
+  background: color-mix(in srgb, var(--_brand) 3%, var(--_bg));
+}
+
+.ith-table-toolbar-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--ith-table-border);
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ith-table-toolbar-inner::-webkit-scrollbar {
+  display: none;
 }
 
 .ith-table-toolbar-main {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-width: 0;
+  flex: 0 0 auto;
+}
+
+.ith-table-toolbar-spacer {
+  flex: 1 1 auto;
+  min-width: 8px;
 }
 
 .ith-table-title {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ith-table-text);
+  font-size: 15.5px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--_text);
   white-space: nowrap;
 }
 
 .ith-table-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: var(--ith-table-accent-soft);
-  color: var(--ith-table-accent);
-  font-size: 11px;
+  background: var(--_accent-soft);
+  color: var(--_accent);
+  font-size: 11.5px;
   font-weight: 600;
+  line-height: 1.4;
   white-space: nowrap;
 }
 
 .ith-table-badge-accent {
-  background: var(--ith-table-accent);
+  background: var(--_accent);
   color: #ffffff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--_accent) 30%, transparent);
 }
 
 .ith-table-search {
   position: relative;
-  flex: 0 1 280px;
+  flex: 0 1 260px;
   min-width: 180px;
 }
 
 .ith-table-search-icon {
   position: absolute;
-  left: 11px;
+  left: 12px;
   top: 50%;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   transform: translateY(-50%);
-  color: var(--ith-table-muted);
+  color: var(--_muted);
   pointer-events: none;
 }
 
@@ -158,47 +181,66 @@
   width: 100%;
   box-sizing: border-box;
   height: 36px;
-  padding: 0 32px 0 34px;
-  border: 1px solid var(--ith-table-input-border);
+  padding: 0 34px 0 36px;
+  border: 1px solid var(--_input-border);
   border-radius: 10px;
-  background: var(--ith-table-input-bg);
-  color: var(--ith-table-text);
+  background: var(--_input-bg);
+  color: var(--_text);
   font-size: 13px;
   font-family: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.ith-table-search-input:hover {
+  border-color: color-mix(in srgb, var(--_accent) 35%, var(--_input-border));
 }
 
 .ith-table-search-input::placeholder {
-  color: var(--ith-table-muted);
+  color: var(--_muted);
+}
+
+/* Hide the browser's native search-cancel button — we render our own `.ith-table-search-clear`. */
+.ith-table-search-input::-webkit-search-cancel-button,
+.ith-table-search-input::-webkit-search-decoration,
+.ith-table-search-input::-webkit-search-results-button,
+.ith-table-search-input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
 .ith-table-search-input:focus {
   outline: none;
-  border-color: var(--ith-table-accent);
-  box-shadow: 0 0 0 3px var(--ith-table-focus);
+  border-color: var(--_accent);
+  box-shadow: 0 0 0 3px var(--_focus);
+  background: var(--_bg);
 }
 
 .ith-table-search-clear {
   position: absolute;
-  right: 7px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 50%;
+  border-radius: 7px;
   background: transparent;
-  color: var(--ith-table-muted);
-  font-size: 16px;
-  line-height: 1;
+  color: var(--_muted);
   cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.ith-table-search-clear svg {
+  width: 14px;
+  height: 14px;
 }
 
 .ith-table-search-clear:hover {
-  background: var(--ith-table-accent-soft);
-  color: var(--ith-table-accent);
+  background: var(--_accent-soft);
+  color: var(--_accent);
 }
 
 /* ------------------------------------------------------------------ */
@@ -218,9 +260,9 @@
 }
 
 .ith-table-head-row th {
-  background: var(--ith-table-header-bg);
-  color: var(--ith-table-header-text);
-  font-size: var(--ith-table-header-font-size);
+  background: var(--_header-bg);
+  color: var(--_header-text);
+  font-size: var(--_header-font-size);
   font-weight: 600;
   letter-spacing: 0.01em;
   text-align: left;
@@ -290,30 +332,30 @@
   height: 16px;
   margin: 0;
   cursor: pointer;
-  accent-color: var(--ith-table-accent);
+  accent-color: var(--_accent);
   vertical-align: middle;
 }
 
 .ith-table-checkbox:focus-visible {
-  outline: 2px solid var(--ith-table-accent);
+  outline: 2px solid var(--_accent);
   outline-offset: 2px;
 }
 
 .ith-table-row {
-  background: var(--ith-table-bg);
+  background: var(--_bg);
   transition: background-color 0.15s ease;
 }
 
 .ith-table-hoverable .ith-table-row:hover {
-  background: var(--ith-table-hover);
+  background: var(--_hover);
 }
 
 .ith-table-row.ith-table-row-selected {
-  background: var(--ith-table-selected-bg);
+  background: var(--_selected-bg);
 }
 
 .ith-table-row.ith-table-row-selected td:first-child {
-  box-shadow: inset 3px 0 0 var(--ith-table-accent);
+  box-shadow: inset 3px 0 0 var(--_accent);
 }
 
 .ith-table-row-clickable {
@@ -321,10 +363,10 @@
 }
 
 .ith-table-td {
-  padding: var(--ith-table-cell-padding);
-  border-bottom: 1px solid var(--ith-table-border);
-  font-size: var(--ith-table-font-size);
-  color: var(--ith-table-text);
+  padding: var(--_cell-padding);
+  border-bottom: 1px solid var(--_border);
+  font-size: var(--_font-size);
+  color: var(--_text);
   vertical-align: middle;
   white-space: nowrap;
   background: transparent;
@@ -351,8 +393,8 @@
 }
 
 .ith-table-actions-cell {
-  padding: var(--ith-table-cell-padding);
-  border-bottom: 1px solid var(--ith-table-border);
+  padding: var(--_cell-padding);
+  border-bottom: 1px solid var(--_border);
   text-align: right;
   white-space: nowrap;
 }
@@ -367,10 +409,10 @@
   gap: 4px;
   padding: 5px 9px;
   margin-left: 4px;
-  border: 1px solid var(--ith-table-border);
+  border: 1px solid var(--_border);
   border-radius: 7px;
   background: transparent;
-  color: var(--ith-table-accent);
+  color: var(--_accent);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -380,8 +422,8 @@
 }
 
 .ith-table-action:hover:not(:disabled) {
-  background: var(--ith-table-accent-soft);
-  border-color: var(--ith-table-accent);
+  background: var(--_accent-soft);
+  border-color: var(--_accent);
 }
 
 .ith-table-action:disabled {
@@ -405,10 +447,10 @@
 /* ------------------------------------------------------------------ */
 
 .ith-table-filter-row th {
-  background: var(--ith-table-filter-bg);
+  background: var(--_filter-bg);
   padding: 8px 10px;
-  border-bottom: 1px solid var(--ith-table-border);
-  border-top: 1px solid var(--ith-table-border);
+  border-bottom: 1px solid var(--_border);
+  border-top: 1px solid var(--_border);
 }
 
 .ith-table-filter-input {
@@ -416,10 +458,10 @@
   box-sizing: border-box;
   height: 30px;
   padding: 0 9px;
-  border: 1px solid var(--ith-table-input-border);
+  border: 1px solid var(--_input-border);
   border-radius: 7px;
-  background: var(--ith-table-input-bg);
-  color: var(--ith-table-text);
+  background: var(--_input-bg);
+  color: var(--_text);
   font-family: inherit;
   font-size: 12px;
 }
@@ -431,12 +473,12 @@
 
 .ith-table-filter-input:focus {
   outline: none;
-  border-color: var(--ith-table-accent);
-  box-shadow: 0 0 0 3px var(--ith-table-focus);
+  border-color: var(--_accent);
+  box-shadow: 0 0 0 3px var(--_focus);
 }
 
 .ith-table-filter-input::placeholder {
-  color: var(--ith-table-muted);
+  color: var(--_muted);
 }
 
 /* ------------------------------------------------------------------ */
@@ -446,7 +488,7 @@
 .ith-table-status {
   padding: 40px 16px;
   text-align: center;
-  color: var(--ith-table-muted);
+  color: var(--_muted);
   font-size: 13px;
 }
 
@@ -467,8 +509,8 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid var(--ith-table-accent-soft);
-  border-top-color: var(--ith-table-accent);
+  border: 2px solid var(--_accent-soft);
+  border-top-color: var(--_accent);
   border-radius: 50%;
   animation: ith-table-spin 0.7s linear infinite;
   vertical-align: middle;
@@ -487,9 +529,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--ith-table-overlay);
+  background: var(--_overlay);
   backdrop-filter: blur(1px);
-  color: var(--ith-table-text);
+  color: var(--_text);
   font-size: 13px;
   font-weight: 500;
   z-index: 3;
@@ -499,7 +541,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ith-table-accent);
+  color: var(--_accent);
   font-family: inherit;
   font-size: 12px;
   text-decoration: underline;
@@ -518,10 +560,10 @@
   gap: 12px;
   flex-wrap: wrap;
   padding: 12px 16px;
-  border-top: 1px solid var(--ith-table-border);
-  background: var(--ith-table-footer-bg);
+  border-top: 1px solid var(--_border);
+  background: var(--_footer-bg);
   font-size: 12px;
-  color: var(--ith-table-muted);
+  color: var(--_muted);
 }
 
 .ith-table-footer-info {
@@ -532,7 +574,7 @@
 }
 
 .ith-table-footer-info strong {
-  color: var(--ith-table-text);
+  color: var(--_text);
   font-weight: 600;
 }
 
@@ -555,10 +597,10 @@
   min-width: 30px;
   height: 30px;
   padding: 0 6px;
-  border: 1px solid var(--ith-table-border);
+  border: 1px solid var(--_border);
   border-radius: 7px;
-  background: var(--ith-table-bg);
-  color: var(--ith-table-text);
+  background: var(--_bg);
+  color: var(--_text);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -572,9 +614,9 @@
 }
 
 .ith-table-page-btn:hover:not(:disabled) {
-  border-color: var(--ith-table-accent);
-  color: var(--ith-table-accent);
-  background: var(--ith-table-accent-soft);
+  border-color: var(--_accent);
+  color: var(--_accent);
+  background: var(--_accent-soft);
 }
 
 .ith-table-page-btn:disabled {
@@ -587,13 +629,13 @@
 }
 
 .ith-table-page-number.is-active {
-  background: var(--ith-table-accent);
-  border-color: var(--ith-table-accent);
+  background: var(--_accent);
+  border-color: var(--_accent);
   color: #ffffff;
 }
 
 .ith-table-page-number.is-active:hover {
-  background: var(--ith-table-accent);
+  background: var(--_accent);
   color: #ffffff;
 }
 
@@ -612,10 +654,10 @@
 .ith-table-select {
   height: 30px;
   padding: 0 6px;
-  border: 1px solid var(--ith-table-border);
+  border: 1px solid var(--_border);
   border-radius: 7px;
-  background: var(--ith-table-bg);
-  color: var(--ith-table-text);
+  background: var(--_bg);
+  color: var(--_text);
   font-family: inherit;
   font-size: 12px;
   cursor: pointer;
@@ -625,7 +667,7 @@
 .ith-table-page-btn:focus-visible,
 .ith-table-action:focus-visible,
 .ith-table-link:focus-visible {
-  outline: 2px solid var(--ith-table-accent);
+  outline: 2px solid var(--_accent);
   outline-offset: 2px;
 }
 
@@ -644,14 +686,14 @@
 }
 
 .ith-table-striped .ith-table-row:nth-child(even) {
-  background: var(--ith-table-striped-bg);
+  background: var(--_striped-bg);
 }
 
 .ith-table-bordered .ith-table-td,
 .ith-table-bordered .ith-table-actions-cell,
 .ith-table-bordered .ith-table-head-row th,
 .ith-table-bordered .ith-table-filter-row th {
-  border-right: 1px solid var(--ith-table-border);
+  border-right: 1px solid var(--_border);
 }
 
 .ith-table-bordered .ith-table-head-row th:last-child,
@@ -687,10 +729,13 @@
 /* ------------------------------------------------------------------ */
 
 @media (max-width: 640px) {
-  .ith-table-toolbar,
   .ith-table-footer {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .ith-table-toolbar-inner {
+    gap: 10px;
   }
 
   .ith-table-search {
@@ -703,6 +748,328 @@
 
   .ith-table-page-state {
     display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Toolbar actions: column picker + density                            */
+/* ------------------------------------------------------------------ */
+
+.ith-table-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  flex: 0 0 auto;
+}
+
+.ith-table-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--_input-border);
+  border-radius: 10px;
+  background: var(--_input-bg);
+  color: var(--_text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.14s ease, background-color 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.ith-table-tool-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.ith-table-tool-btn:hover .ith-table-tool-icon,
+.ith-table-tool-btn[aria-expanded='true'] .ith-table-tool-icon,
+.ith-table-tool-btn[aria-pressed='true'] .ith-table-tool-icon {
+  opacity: 1;
+}
+
+.ith-table-tool-btn:hover {
+  border-color: color-mix(in srgb, var(--_accent) 45%, var(--_input-border));
+  background: color-mix(in srgb, var(--_accent) 4%, var(--_input-bg));
+  color: var(--_accent);
+}
+
+.ith-table-tool-btn[aria-expanded='true'],
+.ith-table-tool-btn[aria-pressed='true'] {
+  border-color: var(--_accent);
+  background: var(--_accent-soft);
+  color: var(--_accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--_accent) 20%, transparent);
+}
+
+.ith-table-tool-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--_focus);
+}
+
+.ith-table-columns {
+  position: relative;
+}
+
+.ith-table-columns-popover {
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 8px);
+  inset-inline-end: 0;
+  min-width: 220px;
+  max-height: 340px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--_border);
+  border-radius: 12px;
+  background: var(--_bg);
+  color: var(--_text);
+  box-shadow: 0 18px 40px -18px rgba(17, 12, 46, 0.35), 0 0 0 1px color-mix(in srgb, var(--_border) 60%, transparent);
+}
+
+.ith-table-columns-header {
+  padding: 10px 12px 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--_muted);
+}
+
+.ith-table-columns-list {
+  padding: 0 6px 6px;
+  overflow-y: auto;
+  max-height: 240px;
+}
+
+.ith-table-columns-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.ith-table-columns-item:hover {
+  background: var(--_hover);
+}
+
+.ith-table-columns-footer {
+  border-top: 1px solid var(--_border);
+  padding: 4px;
+  background: color-mix(in srgb, var(--_brand) 2%, var(--_bg));
+}
+
+.ith-table-columns-reset {
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--_accent);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.ith-table-columns-reset:hover {
+  background: var(--_accent-soft);
+}
+
+/* Compact density (toolbar toggle) — the `dense` input keeps working too. */
+.ith-table.ith-table-compact {
+  --ith-table-cell-padding: 7px 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Sticky columns                                                     */
+/* ------------------------------------------------------------------ */
+
+.ith-table-sticky-start,
+.ith-table-sticky-end {
+  position: sticky;
+  z-index: 3;
+  background: var(--_bg);
+}
+
+.ith-table-sticky-start {
+  box-shadow: inset -1px 0 0 var(--_border);
+}
+
+.ith-table-sticky-end {
+  box-shadow: inset 1px 0 0 var(--_border);
+}
+
+.ith-table-striped .ith-table-row:nth-child(even) .ith-table-sticky-start,
+.ith-table-striped .ith-table-row:nth-child(even) .ith-table-sticky-end {
+  background: var(--_striped-bg);
+}
+
+.ith-table-row-selected .ith-table-sticky-start,
+.ith-table-row-selected .ith-table-sticky-end {
+  background: var(--_selected-bg);
+}
+
+.ith-table-row:hover .ith-table-sticky-start,
+.ith-table-row:hover .ith-table-sticky-end {
+  background: var(--_hover);
+}
+
+thead .ith-table-sticky-start,
+thead .ith-table-sticky-end {
+  z-index: 7;
+  background: var(--_header-bg);
+}
+
+.ith-table-filter-row .ith-table-sticky-start,
+.ith-table-filter-row .ith-table-sticky-end {
+  z-index: 6;
+  background: var(--_filter-bg);
+}
+
+/* ------------------------------------------------------------------ */
+/* Copy to clipboard                                                  */
+/* ------------------------------------------------------------------ */
+
+.ith-table-td {
+  position: relative;
+}
+
+.ith-table-td.ith-table-copyable {
+  padding-inline-end: 36px;
+}
+
+.ith-table-copy {
+  position: absolute;
+  inset-inline-end: 8px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: var(--_bg);
+  color: var(--_muted);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.ith-table-copy svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ith-table-td:hover .ith-table-copy,
+.ith-table-td:focus-within .ith-table-copy,
+.ith-table-copy.is-copied {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ith-table-copy:hover {
+  border-color: var(--_accent);
+  color: var(--_accent);
+}
+
+.ith-table-copy.is-copied {
+  color: var(--_accent);
+}
+
+.ith-table-td:focus-visible {
+  outline: 2px solid var(--_accent);
+  outline-offset: -2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Skeleton loading                                                   */
+/* ------------------------------------------------------------------ */
+
+.ith-table-skeleton {
+  display: block;
+  width: 72%;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--_border) 25%,
+    var(--_hover) 37%,
+    var(--_border) 63%
+  );
+  background-size: 400% 100%;
+  animation: ith-table-shimmer 1.4s ease infinite;
+}
+
+.ith-table-skeleton.is-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  margin: 0 auto;
+}
+
+@keyframes ith-table-shimmer {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0 50%;
+  }
+}
+
+.ith-table-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Right-click menu                                                   */
+/* ------------------------------------------------------------------ */
+
+.ith-table-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 180px;
+  max-width: 280px;
+  padding: 6px;
+  border: 1px solid var(--_border);
+  border-radius: 10px;
+  background: var(--_bg);
+  color: var(--_text);
+  box-shadow: 0 16px 36px -16px rgba(17, 12, 46, 0.45);
+  font-size: 13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ith-table-skeleton {
+    animation: none;
+  }
+
+  .ith-table-copy,
+  .ith-table-tool-btn {
+    transition: none;
   }
 }
 

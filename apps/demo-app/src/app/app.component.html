@@ -1,8 +1,8 @@
 <div class="container mt-4 mb-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
       <h1 class="mb-1">iTHouse Angular Libraries</h1>
-      <p class="text-muted mb-0">Data table &amp; dropdown components for Angular 20+</p>
+      <p class="text-muted mb-0">Data table, dropdown &amp; cascading select for Angular 20+</p>
     </div>
     <div class="btn-group">
       <button class="btn btn-outline-secondary" (click)="setTheme('light')" [class.active]="currentTheme() === 'light'">☀️ Light</button>
@@ -11,307 +11,44 @@
     </div>
   </div>
 
-  <!-- Data table: client side -->
-  <section class="mb-5">
-    <h2 class="mb-3">Data Table — client side</h2>
-    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-      <p class="text-muted small mb-0">
-      Click a header to sort, use the search box, tick rows (or the header checkbox) to select,
-      and use the row actions. Every column gets a filter control (text, number or select) and
-      the filter row itself can be turned off above.
-      </p>
-      <label class="form-check-label small">
-        <input
-          class="form-check-input me-1"
-          type="checkbox"
-          [checked]="studentFilters"
-          (change)="studentFilters = $any($event.target).checked" />
-        Show column filters
-      </label>
-    </div>
+  <ul class="nav nav-pills gap-2 mb-4">
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/table" routerLinkActive="active">📊 Table</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/dropdown" routerLinkActive="active">📋 Dropdown</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/cascader" routerLinkActive="active">🗂️ Cascader</a>
+    </li>
+  </ul>
 
-    <ith-table
-      title="Student List"
-      ariaLabel="Student list"
-      countSuffix="items"
-      [data]="students"
-      [columns]="studentColumns"
-      selectionMode="multi"
-      [rowActions]="studentActions"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="[10, 20, 50]"
-      [showFilters]="studentFilters"
-      [rowClickable]="true"
-      [(selected)]="selectedStudents"
-      (pageSizeChange)="onPageSizeChange($event)"
-      (rowClick)="onStudentClick($event)"
-      (actionClick)="onStudentAction($event)">
-      <ng-template ithTableCell="status" let-value="value">
-        <span class="demo-status" [class.demo-status-active]="value === 'Active'">{{ value }}</span>
-      </ng-template>
-
-      <!-- Custom filter control for the Name column -->
-      <ng-template ithTableFilter="name" let-value let-setFn="setValue">
-        <div class="demo-filter">
-          <input
-            type="text"
-            class="demo-filter-input"
-            [value]="value"
-            placeholder="Name…"
-            aria-label="Filter by name"
-            (input)="setFn($any($event.target).value)" />
-          @if (value) {
-            <button
-              type="button"
-              class="demo-filter-clear"
-              (click)="setFn('')"
-              aria-label="Clear name filter">×</button>
-          }
-        </div>
-      </ng-template>
-    </ith-table>
-
-    <p class="text-muted small mt-2 mb-0">
-      {{ selectedStudents.length }} row(s) selected.
-      @if (lastAction) {
-        Last action — <strong>{{ lastAction }}</strong>
-      }
-    </p>
-  </section>
-
-  <!-- Data table: server side -->
-  <section class="mb-5">
-    <h2 class="mb-3">Data Table — server mode</h2>
-    <p class="text-muted small">
-      The table emits sort/search/filter/page/pageSize changes; the demo fakes an API call
-      (400&nbsp;ms) over 47 users and sends back one page at a time. The Role column uses a
-      select filter, so only the matching roles are fetched back.
-    </p>
-
-    <ith-table
-      title="User Directory"
-      ariaLabel="User directory"
-      countSuffix="users"
-      mode="server"
-      [data]="serverRows()"
-      [columns]="serverColumns"
-      [total]="serverTotal()"
-      [loading]="serverLoading()"
-      [search]="serverSearch()"
-      [sort]="serverSort()"
-      [page]="serverPage()"
-      [pageSize]="serverPageSize()"
-      [pageSizeOptions]="[5, 10, 25]"
-      selectionMode="multi"
-      [showFilters]="true"
-      actionsHeader="Open"
-      (searchChange)="onServerSearch($event)"
-      (sortChange)="onServerSort($event)"
-      (pageChange)="onServerPage($event)"
-      (pageSizeChange)="onServerPageSize($event)"
-      (filterChange)="onServerFilters($event)">
-      <ng-template ithTableRowActions let-row>
-        <button type="button" class="btn btn-sm btn-outline-primary" (click)="onUserAction(row)">
-          Open {{ row.id }}
-        </button>
-      </ng-template>
-    </ith-table>
-  </section>
-
-  <!-- Cascading select -->
-  <section class="mb-5">
-    <h2 class="mb-3">Cascading select (dependent dropdown)</h2>
-    <p class="text-muted small">
-      Division → District → Sub-district, any depth. Only the divisions ship with the page —
-      each child level is fetched with a simulated 600&nbsp;ms API call, cached, and shown with
-      its own placeholder (“Select District”, “Select Sub-district”). Typing searches the whole
-      tree on the server (300&nbsp;ms debounce + simulated 400&nbsp;ms request), so levels never
-      have to be loaded first.
-    </p>
-
-    <div class="row g-4">
-      <div class="col-md-6">
-        <label class="form-label">Select Delivery Area <span class="text-danger">*</span></label>
-        <ith-cascader
-          [options]="areaRoots"
-          [loadChildren]="loadAreaChildren"
-          [resolveValue]="resolveAreaValue"
-          [searchFn]="searchAreas"
-          [levelPlaceholders]="areaPlaceholders"
-          loadingText="Loading…"
-          ariaLabel="Select delivery area"
-          [(value)]="deliveryArea"
-          (selectionChange)="onAreaChange($event)">
-        </ith-cascader>
-        <p class="text-muted small mt-2 mb-0">
-          Value: <code>{{ deliveryArea ?? '—' }}</code>
-          @if (areaPath) {
-            · Path: {{ areaPath }}
-          }
-        </p>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary mt-2"
-          (click)="loadSavedArea()">
-          Edit a saved record (Uttara)
-        </button>
-      </div>
-
-      <div class="col-md-6">
-        <label class="form-label">Product category</label>
-        <ith-cascader
-          [options]="categories"
-          placeholder="Select category"
-          ariaLabel="Select product category"
-          [(value)]="category"
-          (selectionChange)="onCategoryChange($event)">
-        </ith-cascader>
-        <p class="text-muted small mt-2 mb-0">
-          Value: <code>{{ category ?? '—' }}</code>
-          @if (categoryPath) {
-            · Path: {{ categoryPath }}
-          }
-        </p>
-      </div>
-    </div>
-  </section>
+  <router-outlet />
 
   <hr class="my-5" />
 
-  <h2 class="mb-4">Dropdown</h2>
-
-  <!-- Bootstrap Section -->
-  <section class="mb-5">
-    <h2 class="mb-3">Bootstrap Components (for reference)</h2>
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Bootstrap Card</h5>
-        <p class="card-text">This card uses Bootstrap styling alongside the dropdown.</p>
-        <button class="btn btn-primary">Bootstrap Button</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Basic Dropdown -->
-  <section class="mb-5">
-    <h2 class="mb-3">Basic Single Select</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <ith-dropdown
-          [options]="basicOptions"
-          placeholder="Select a fruit"
-          (selectionChange)="onSelectionChange($event)">
-        </ith-dropdown>
-      </div>
-    </div>
-  </section>
-
-  <!-- Multi-select -->
-  <section class="mb-5">
-    <h2 class="mb-3">Multi-Select with Search</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <ith-dropdown
-          [options]="countries"
-          [multiple]="true"
-          [searchable]="true"
-          placeholder="Select countries"
-          (selectionChange)="onMultiSelectionChange($event)">
-        </ith-dropdown>
-      </div>
-    </div>
-  </section>
-
-  <!-- Grouped Options -->
-  <section class="mb-5">
-    <h2 class="mb-3">Grouped Options</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <ith-dropdown
-          [options]="groupedOptions"
-          [groupBy]="'group'"
-          placeholder="Select a city">
-        </ith-dropdown>
-      </div>
-    </div>
-  </section>
-
-  <!-- With Pagination -->
-  <section class="mb-5">
-    <h2 class="mb-3">With Pagination (Large Dataset)</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <ith-dropdown
-          [options]="largeOptions"
-          [pageable]="true"
-          [pageSize]="10"
-          [searchable]="true"
-          placeholder="Search from large list">
-        </ith-dropdown>
-      </div>
-    </div>
-  </section>
-
-  <!-- Infinite Scroll -->
-  <section class="mb-5">
-    <h2 class="mb-3">Infinite Scroll (auto load-more)</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <ith-dropdown
-          [options]="largeOptions"
-          [infiniteScroll]="true"
-          [pageSize]="20"
-          [searchable]="true"
-          placeholder="Scroll to load more…">
-        </ith-dropdown>
-      </div>
-    </div>
-    <p class="text-muted mt-2 small">Keyboard: focus the dropdown and use Arrow keys / Home / End / Enter / Escape.</p>
-  </section>
-
-  <!-- Disabled Options -->
-  <section class="mb-5">
-    <h2 class="mb-3">Disabled Options</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <ith-dropdown
-          [options]="disabledOptions"
-          placeholder="Some options disabled">
-        </ith-dropdown>
-      </div>
-    </div>
-  </section>
-
-  <!-- Tailwind Section -->
-  <section class="mb-5">
-    <h2 class="mb-3">Tailwind Components (with tw- prefix)</h2>
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <lib-card title="Tailwind Card">
-          This card uses Tailwind CSS classes with tw- prefix to avoid conflicts with Bootstrap.
-        </lib-card>
-      </div>
-      <div class="col-md-6 mb-3">
-        <div class="tw-p-4 tw-bg-gray-100 tw-rounded">
-          <lib-button variant="primary" class="tw-mr-2">Primary</lib-button>
-          <lib-button variant="success" class="tw-mr-2">Success</lib-button>
-          <lib-button variant="danger">Danger</lib-button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Documentation Links -->
   <section class="mb-5">
     <h2 class="mb-3">Documentation</h2>
     <div class="list-group">
-      <a href="#" class="list-group-item list-group-item-action">
+      <a
+        class="list-group-item list-group-item-action"
+        href="https://github.com/ithouse-bd/angular-libs/tree/main/libs/ngx-table#readme"
+        target="_blank"
+        rel="noreferrer">
         <strong>📊 Table library</strong> — libs/ngx-table/README.md
       </a>
-      <a href="#" class="list-group-item list-group-item-action">
-        <strong>📖 Dropdown documentation</strong> — libs/ngx-dropdown/DOCUMENTATION.md
+      <a
+        class="list-group-item list-group-item-action"
+        href="https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-dropdown/DOCUMENTATION.md"
+        target="_blank"
+        rel="noreferrer">
+        <strong>📖 Dropdown &amp; cascader documentation</strong> — libs/ngx-dropdown/DOCUMENTATION.md
       </a>
-      <a href="#" class="list-group-item list-group-item-action">
+      <a
+        class="list-group-item list-group-item-action"
+        href="https://github.com/ithouse-bd/angular-libs/tree/main/libs/ngx-dropdown#theming"
+        target="_blank"
+        rel="noreferrer">
         <strong>🎨 Theming guide</strong> — libs/ngx-table/THEMING.md and libs/ngx-dropdown/THEMING.md
       </a>
     </div>

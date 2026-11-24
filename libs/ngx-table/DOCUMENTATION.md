@@ -35,17 +35,16 @@ Install:
 npm install @ithouse-bd/ngx-table
 ```
 
-Import the component directly (recommended) or `NgxTableModule` for NgModule apps:
+The library is standalone-only; import the component and any template directives you use:
 
 ```typescript
 import { TableComponent, TableCellDirective } from '@ithouse-bd/ngx-table';
 ```
 
 > **Projected templates:** the `ithTableCell`, `ithTableHeader`, `ithTableFilter`,
-> `ithTableRowActions`, `ithTableToolbar`, `ithTableFooter` and `ithTableEmpty` directives are
-> used in *your*
-> template, so import the ones you use into your component (or import `NgxTableModule`,
-> which re-exports all of them).
+> `ithTableRowActions`, `ithTableToolbar`, `ithTableFooter`, `ithTableEmpty` and
+> `ithTableRowMenu` directives are used in *your* template, so import the ones you use into
+> your component.
 
 ## Basic usage
 
@@ -117,6 +116,8 @@ Defaults that matter:
 | `sortFn` | `(a: T, b: T) => number` | Custom ascending comparator. |
 | `searchValue` | `(row: T) => string` | Custom text for the global search. |
 | `filterValue` | `(row: T) => string` | Custom text for the column filter. |
+| `tooltip` | `boolean` | Show the full cell text as a native tooltip (default `true`). |
+| `sticky` | `'start' \| 'end'` | Keep the column pinned while scrolling horizontally (declare a `width`). |
 
 Nested values work out of the box:
 
@@ -421,6 +422,68 @@ Replaces the default summary **only**; pagination controls stay. Context adds `p
 </ng-template>
 ```
 
+## Copy, context menu & presets
+
+### Copy
+
+```html
+<ith-table [data]="rows" [columns]="columns" [copyable]="true"
+           (cellCopy)="onCopy($event)"></ith-table>
+```
+
+- A copy button appears on cell hover; `Ctrl`/`Cmd` + `C` copies the focused cell too.
+- `(cellCopy)` emits `{ value, row, index, column }`; `column` is `null` when a full row was
+  copied with `copyRow(row, index)`.
+
+### Right-click menu
+
+```html
+<ith-table [data]="rows" [columns]="columns">
+  <ng-template ithTableRowMenu let-row let-index="index">
+    <button type="button" (click)="open(row)">Open</button>
+    <button type="button" (click)="remove(row, index)">Delete</button>
+  </ng-template>
+</ith-table>
+```
+
+- Right-click or `Shift+F10` / the context-menu key emits `rowContextMenu`
+  (`{ row, index, x, y, event }`) and renders the template in a fixed panel at the pointer.
+- The panel closes on outside click or `Escape`; `closeRowMenu()` closes it from code.
+- Without an `ithTableRowMenu` template the event is still emitted (for your own popover)
+  and the browser menu is left alone.
+
+### Column visibility, density and presets
+
+```html
+<ith-table [data]="rows" [columns]="columns"
+           [showColumnPicker]="true"
+           [showDensityToggle]="true"
+           storageKey="students-table"
+           (columnsChange)="onColumns($event)"
+           (densityChange)="onDensity($event)"></ith-table>
+```
+
+- The "Columns" popover toggles visibility without touching the column config; at least one
+  column always stays visible.
+- With `storageKey`, the hidden-column list and the comfortable/compact density are restored
+  from `localStorage` on the next visit. Call `resetColumns()` to clear the selection.
+- `dense` still forces compact rows; the toggle only switches the runtime density.
+
+### Sticky columns and tooltips
+
+```typescript
+columns: TableColumn<Row>[] = [
+  { key: 'name', header: 'Name', width: '220px', sticky: 'start' },
+  { key: 'email', header: 'Email' },
+  { key: 'notes', header: 'Notes', tooltip: true },
+];
+```
+
+- `sticky: 'start' | 'end'` pins that column; declare a pixel `width` so the next sticky
+  column can be offset.
+- `[stickySelection]="true"` / `[stickyActions]="true"` pin the checkbox and actions columns.
+- `tooltip: false` disables the native title for a column.
+
 ## Loading and empty states
 
 ```html
@@ -539,8 +602,7 @@ them from the parent.
 ## Troubleshooting
 
 **Template directives are ignored / “not a known property”**
-Import `TableCellDirective` (and friends) into the component that declares the template, or
-import `NgxTableModule`.
+Import `TableCellDirective` (and friends) into the component that declares the template.
 
 **Styles don’t show up**
 Component styles are scoped; do not set `encapsulation: ViewEncapsulation.None` on the
@@ -618,6 +680,13 @@ Rows are compared by `keyField`; pass the same row objects (or at least the same
 | `dense` | `boolean` | `false` |
 | `stickyHeader` | `boolean` | `false` |
 | `maxHeight` | `string` | `''` |
+| `copyable` | `boolean` | `false` |
+| `showColumnPicker` | `boolean` | `false` |
+| `showDensityToggle` | `boolean` | `false` |
+| `storageKey` | `string` | `''` |
+| `skeletonRows` | `number` | `6` |
+| `stickySelection` | `boolean` | `false` |
+| `stickyActions` | `boolean` | `false` |
 
 ### Outputs
 
@@ -632,6 +701,10 @@ Rows are compared by `keyField`; pass the same row objects (or at least the same
 | `selectedChange` | `T[]` |
 | `actionClick` | `TableActionEvent<T>` (`{ action, row, index }`) |
 | `rowClick` | `TableRowEvent<T>` (`{ row, index, event }`) |
+| `cellCopy` | `TableCellCopyEvent<T>` (`{ value, row, index, column }`) |
+| `rowContextMenu` | `TableRowMenuEvent<T>` (`{ row, index, x, y, event }`) |
+| `columnsChange` | `string[]` (visible column keys) |
+| `densityChange` | `'comfortable' \| 'compact'` |
 
 ## License
 

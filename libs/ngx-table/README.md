@@ -29,6 +29,15 @@ API-driven (server) data.
 - **Row actions** — declarative action buttons with icons, classes, disabled/hidden rules, or your own template
 - **Custom templates** — cell, header, row actions, toolbar, footer and empty state
 - **Server mode** — the table emits sort/search/filter/page changes; you supply one page of rows
+- **Copy** — hover a cell (or press Ctrl/Cmd+C on a focused cell) or copy a whole row
+- **Context menu** — right-click / `Shift+F10` emits `rowContextMenu` and renders your
+  `ithTableRowMenu` template in a floating panel at the pointer
+- **Column visibility + preset** — toolbar picker; hidden columns and density are saved in
+  `localStorage` through `storageKey`
+- **Sticky columns** — stick the checkbox and actions columns (or any column with `sticky`)
+- **Cell tooltips** — full value on hover for truncated cells, opt out per column
+- **Skeleton loading** — placeholder rows instead of a blank table, plus a toolbar
+  comfortable/compact density toggle
 - **Presentation** — striped, bordered, dense, hover, sticky header, fixed max height, loading overlay
 - **Theming** — CSS variables with light, dark and system (`auto`) modes; zero style-framework dependency
 - **Signals everywhere** — `input()`, `model()`, `output()`, standalone component, zoneless-safe
@@ -40,9 +49,9 @@ API-driven (server) data.
 | --- | --- |
 | Angular 20 and newer | ✅ |
 | Angular 17, 18, 19 | ❌ not supported (`>=20.0.0` peer range) |
-| Standalone components | ✅ |
-| NgModule apps | ✅ (`NgxTableModule`) |
-| Zoneless change detection | ✅ |
+| Standalone components | ✅ required |
+| `NgModule` wrappers | ❌ removed (import the standalone components directly) |
+| Zoneless change detection | ✅ (signals throughout) |
 | SSR / prerendering | ✅ no direct DOM access |
 
 ## Installation
@@ -130,7 +139,7 @@ Add `ithTableCell` templates for any column key. The context exposes `$implicit`
 </ith-table>
 ```
 
-Import the directive next to the table (or use `NgxTableModule`):
+Import the directive next to the table:
 
 ```typescript
 import { TableCellDirective, TableComponent } from '@ithouse-bd/ngx-table';
@@ -139,7 +148,40 @@ import { TableCellDirective, TableComponent } from '@ithouse-bd/ngx-table';
 ```
 
 Other slots: `ithTableHeader="key"`, `ithTableFilter="key"`, `ithTableRowActions`,
-`ithTableToolbar`, `ithTableFooter`, `ithTableEmpty`.
+`ithTableToolbar`, `ithTableFooter`, `ithTableEmpty`, `ithTableRowMenu`.
+
+## Copy, context menu & column preset
+
+```html
+<ith-table
+  [data]="students"
+  [columns]="columns"
+  [copyable]="true"
+  [showColumnPicker]="true"
+  [showDensityToggle]="true"
+  storageKey="students-table"
+  [stickySelection]="true"
+  [stickyActions]="true"
+  (cellCopy)="onCopy($event)">
+
+  <ng-template ithTableRowMenu let-row>
+    <button type="button" (click)="open(row)">Open</button>
+    <button type="button" (click)="remove(row)">Delete</button>
+  </ng-template>
+</ith-table>
+```
+
+- `copyable` adds a hover copy button per cell and lets Ctrl/Cmd+C copy the focused cell;
+  `(cellCopy)` reports `{ value, row, index, column }`.
+- Right-clicking a row (or `Shift+F10` / the context-menu key) emits `rowContextMenu` with the
+  pointer position and renders the `ithTableRowMenu` template in a fixed panel that closes on
+  outside click or `Escape`.
+- `showColumnPicker` renders a "Columns" popover; the choice and the density toggle are
+  persisted under `storageKey`, so a returning user gets the same layout.
+- `stickySelection` / `stickyActions` keep the first and last columns visible while scrolling
+  horizontally; `TableColumn.sticky` does the same for any other column (give it a `width`).
+- `TableColumn.tooltip` (default `true`) puts the full text in the native `title`, which is
+  what makes truncated cells readable on hover.
 
 ![Selection and row actions](https://raw.githubusercontent.com/ithouse-bd/angular-libs/main/libs/ngx-table/docs/images/table-selection.svg)
 
@@ -197,10 +239,21 @@ for a complete example.
 
 ## Theming
 
+One token adopts your application's brand colour — header, hover, selected rows, filters,
+footer, focus ring and toolbar buttons all derive from it (light and dark):
+
+```css
+:root {
+  --ith-table-brand: #0f766e;
+}
+```
+
+Individual tokens are still available for finer control:
+
 ```css
 .my-table {
-  --ith-table-header-bg: #0f172a;
-  --ith-table-accent: #2563eb;
+  --ith-table-brand: #2563eb;
+  --ith-table-header-text: #e2e8f0;
   --ith-table-radius: 8px;
 }
 ```

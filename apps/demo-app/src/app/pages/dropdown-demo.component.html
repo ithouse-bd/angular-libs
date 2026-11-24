@@ -1,0 +1,112 @@
+<section class="mb-5">
+  <h2 class="mb-3">Bootstrap Components (for reference)</h2>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Bootstrap Card</h5>
+      <p class="card-text">This card uses Bootstrap styling alongside the dropdown.</p>
+      <button class="btn btn-primary">Bootstrap Button</button>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2 class="mb-3">Basic Single Select</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <ith-dropdown
+        [options]="basicOptions"
+        placeholder="Select a fruit"
+        (selectionChange)="onSelectionChange($event)">
+      </ith-dropdown>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2 class="mb-3">Multi-Select with Search</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <ith-dropdown
+        [options]="countries"
+        [multiple]="true"
+        [searchable]="true"
+        placeholder="Select countries"
+        (selectionChange)="onMultiSelectionChange($event)">
+      </ith-dropdown>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2 class="mb-3">Grouped Options</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <ith-dropdown
+        [options]="groupedOptions"
+        [groupBy]="'group'"
+        placeholder="Select a city">
+      </ith-dropdown>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2 class="mb-3">With Pagination (Large Dataset)</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <ith-dropdown
+        [options]="largeOptions"
+        [pageable]="true"
+        [pageSize]="10"
+        [searchable]="true"
+        placeholder="Search from large list">
+      </ith-dropdown>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2 class="mb-3">Infinite Scroll (auto load-more)</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <ith-dropdown
+        [options]="largeOptions"
+        [infiniteScroll]="true"
+        [pageSize]="20"
+        [searchable]="true"
+        placeholder="Scroll to load more…">
+      </ith-dropdown>
+    </div>
+  </div>
+  <p class="text-muted mt-2 small">Keyboard: focus the dropdown and use Arrow keys / Home / End / Enter / Escape.</p>
+</section>
+
+<section class="mb-5">
+  <h2 class="mb-3">Disabled Options</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <ith-dropdown
+        [options]="disabledOptions"
+        placeholder="Some options disabled">
+      </ith-dropdown>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2 class="mb-3">Tailwind Components (with tw- prefix)</h2>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <lib-card title="Tailwind Card">
+        This card uses Tailwind CSS classes with tw- prefix to avoid conflicts with Bootstrap.
+      </lib-card>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="tw-p-4 tw-bg-gray-100 tw-rounded">
+        <lib-button variant="primary" class="tw-mr-2">Primary</lib-button>
+        <lib-button variant="success" class="tw-mr-2">Success</lib-button>
+        <lib-button variant="danger">Danger</lib-button>
+      </div>
+    </div>
+  </div>
+</section>
