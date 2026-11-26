@@ -6,6 +6,7 @@ import {
   TableFooterContext,
   TableHeaderContext,
   TableRowActionsContext,
+  TableRowDetailContext,
   TableRowMenuContext,
   TableToolbarContext,
 } from '../models/table.models';
@@ -76,4 +77,18 @@ export class TableEmptyDirective {
 @Directive({ selector: '[ithTableRowMenu]' })
 export class TableRowMenuDirective {
   constructor(readonly template: TemplateRef<TableRowMenuContext>) {}
+}
+
+/**
+ * Expandable row content, rendered on its own full-width row under the row.
+ *
+ * ```html
+ * <ng-template ithTableRowDetail let-row let-close="close">
+ *   <div class="detail">{{ row.email }}</div>
+ * </ng-template>
+ * ```
+ */
+@Directive({ selector: '[ithTableRowDetail]' })
+export class TableRowDetailDirective {
+  constructor(readonly template: TemplateRef<TableRowDetailContext>) {}
 }

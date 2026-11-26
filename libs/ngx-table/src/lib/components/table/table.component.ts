@@ -2,11 +2,14 @@ import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   HostListener,
   TemplateRef,
+  afterNextRender,
   computed,
   contentChildren,
   effect,
+  inject,
   input,
   model,
   output,
@@ -21,24 +24,33 @@ import {
   TableFooterDirective,
   TableHeaderDirective,
   TableRowActionsDirective,
+  TableRowDetailDirective,
   TableRowMenuDirective,
   TableToolbarDirective,
 } from '../../directives/table-template.directives';
 import {
   TableActionEvent,
+  TableAggregate,
+  TableAggregateType,
   TableCellContext,
   TableCellCopyEvent,
   TableColumn,
   TableDensity,
+  TableExportEvent,
   TableFilterContext,
   TableFilterOption,
   TableFilterType,
   TableMode,
+  TablePin,
+  TablePresetState,
   TableRowAction,
+  TableRowDetailContext,
   TableRowEvent,
   TableRowMenuContext,
   TableRowMenuEvent,
   TableSelectAllScope,
+  TableSelectionAction,
+  TableSelectionActionEvent,
   TableSelectionMode,
   TableSort,
   TableSortDirection,
@@ -51,8 +63,31 @@ import {
   isInteractiveTarget,
   toDisplay,
 } from '../../utils/table.utils';
+import { buildXlsxBlob } from '../../utils/xlsx.utils';
 
 let tableIdCounter = 0;
+
+/** Where a floating menu should be drawn (viewport coordinates). */
+interface FloatingPosition {
+  x: number;
+  y: number;
+}
+
+/** Column menu state. */
+interface ColumnMenuState extends FloatingPosition {
+  key: string;
+}
+
+/** One removable filter chip. */
+interface FilterChip {
+  kind: 'search' | 'filter';
+  key: string;
+  label: string;
+  value: string;
+}
+
+const DEFAULT_COLUMN_WIDTH = 140;
+const MIN_COLUMN_WIDTH = 56;
 
 /**
  * Generic, standalone data table.
@@ -70,13 +105,15 @@ let tableIdCounter = 0;
 @Component({
   selector: 'ith-table',
   // Note: the custom-template directives are *projected* by the consumer, so they
-  // are imported by the consumer (or via `NgxTableModule`), not declared here.
+  // are imported by the consumer, not declared here.
   imports: [NgClass, NgTemplateOutlet],
   templateUrl: './table.component.html',
   styleUrl: './table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent<T = any> {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
   /** Unique prefix for generated DOM ids. */
   readonly idBase = `ith-table-${tableIdCounter++}`;
 
@@ -138,6 +175,8 @@ export class TableComponent<T = any> {
   /** How many numbered page buttons are rendered. */
   readonly maxPageButtons = input<number>(5);
   readonly showFooter = input<boolean>(true);
+  /** Render removable chips for the active search term and column filters. */
+  readonly showFilterChips = input<boolean>(true);
 
   /* ---------------------------------------------------------------- */
   /* Selection                                                        */
@@ -149,6 +188,8 @@ export class TableComponent<T = any> {
   readonly selected = model<T[]>([]);
   /** Selecting a row by clicking anywhere on it (not only the checkbox). */
   readonly selectOnRowClick = input<boolean>(false);
+  /** Bulk actions rendered in the selection bar once rows are selected. */
+  readonly selectionActions = input<TableSelectionAction<T>[]>([]);
 
   /* ---------------------------------------------------------------- */
   /* Row actions / presentation                                       */
@@ -181,6 +222,20 @@ export class TableComponent<T = any> {
   readonly showColumnPicker = input<boolean>(false);
   /** Show the comfortable/compact density toggle in the toolbar. */
   readonly showDensityToggle = input<boolean>(false);
+  /** Show the per-column header menu (sort, pin, autosize, hide). */
+  readonly showColumnMenu = input<boolean>(true);
+  /** Show the toolbar "Export" button (CSV download). */
+  readonly showExport = input<boolean>(false);
+  /** Base file name used by `downloadCsv()`. */
+  exportFileName = input<string>('table');
+  /** Show the toolbar "Views" menu for saving/loading named presets. */
+  readonly showViews = input<boolean>(false);
+  /** Allow dragging the column separator to resize a column. */
+  readonly resizable = input<boolean>(false);
+  /** Allow dragging a header onto another header to reorder columns. */
+  readonly reorderable = input<boolean>(false);
+  /** Arrow-key navigation across cells with a single tab stop. */
+  readonly keyboardNavigation = input<boolean>(true);
   /**
    * localStorage key for the saved column/density preset. When set, the user's
    * choice is restored on the next visit.
@@ -188,10 +243,23 @@ export class TableComponent<T = any> {
   readonly storageKey = input<string>('');
   /** Number of placeholder rows rendered while `loading` and there are no rows. */
   readonly skeletonRows = input<number>(6);
+  /**
+   * Minimum number of body rows the grid keeps in view. Rows stay at their natural
+   * height, the spare space stays empty, so a table with one row does not collapse
+   * into a single line. `0` lets the grid shrink to its content.
+   */
+  readonly minRows = input<number>(4);
   /** Stick the checkbox column to the start edge. */
   readonly stickySelection = input<boolean>(false);
   /** Stick the actions column to the end edge. */
   readonly stickyActions = input<boolean>(false);
+
+  /* ---------------------------------------------------------------- */
+  /* Row detail                                                       */
+  /* ---------------------------------------------------------------- */
+
+  /** How the `#ithTableRowDetail` template is expanded. */
+  readonly rowDetailTrigger = input<'button' | 'row' | 'none'>('button');
 
   /* ---------------------------------------------------------------- */
   /* Events                                                           */
@@ -206,6 +274,14 @@ export class TableComponent<T = any> {
   /** Visible column keys, emitted whenever the user changes column visibility. */
   readonly columnsChange = output<string[]>();
   readonly densityChange = output<TableDensity>();
+  /** Full user-chosen layout (hidden, density, order, widths, pinned). */
+  readonly columnStateChange = output<TablePresetState>();
+  /** Bulk action clicked in the selection bar. */
+  readonly selectionAction = output<TableSelectionActionEvent<T>>();
+  /** Emitted with the generated CSV text after `downloadCsv()` / the toolbar button. */
+  readonly csvExport = output<string>();
+  /** Emitted for both downloads (CSV and XLSX) with the produced file. */
+  readonly exportFile = output<TableExportEvent<T>>();
 
   /* ---------------------------------------------------------------- */
   /* Custom templates                                                 */
@@ -221,6 +297,9 @@ export class TableComponent<T = any> {
   private readonly footerDirectives = contentChildren(TableFooterDirective, { descendants: true });
   private readonly emptyDirectives = contentChildren(TableEmptyDirective, { descendants: true });
   private readonly rowMenuDirectives = contentChildren(TableRowMenuDirective, {
+    descendants: true,
+  });
+  private readonly rowDetailDirectives = contentChildren(TableRowDetailDirective, {
     descendants: true,
   });
 
@@ -263,6 +342,9 @@ export class TableComponent<T = any> {
   readonly rowMenuTemplate = computed<TemplateRef<TableRowMenuContext<T>> | undefined>(
     () => this.rowMenuDirectives()[0]?.template,
   );
+  readonly rowDetailTemplate = computed<TemplateRef<TableRowDetailContext<T>> | undefined>(
+    () => this.rowDetailDirectives()[0]?.template,
+  );
 
   /* ---------------------------------------------------------------- */
   /* Internal state                                                   */
@@ -274,8 +356,28 @@ export class TableComponent<T = any> {
   /** Columns hidden at runtime (on top of `column.hidden`), persisted via `storageKey`. */
   private readonly hiddenColumnKeys = signal<ReadonlySet<string>>(new Set());
   private readonly density = signal<TableDensity>('comfortable');
+  /** Runtime column order (all column keys, hidden ones included). */
+  private readonly columnOrder = signal<string[]>([]);
+  /** Runtime widths in px, keyed by column key. */
+  private readonly columnWidths = signal<Record<string, number>>({});
+  /** Runtime pinning, keyed by column key. */
+  private readonly pinnedKeys = signal<Record<string, TablePin>>({});
+  /** Measured header widths, used to offset stacked sticky columns. */
+  private readonly measuredWidths = signal<Record<string, number>>({});
+  /** Saved named views. */
+  private readonly views = signal<Record<string, TablePresetState>>({});
+  private readonly activeView = signal<string | null>(null);
+
   readonly compact = computed(() => this.dense() || this.density() === 'compact');
   readonly columnPickerOpen = signal(false);
+  readonly columnsMenuPos = signal<FloatingPosition | null>(null);
+  readonly viewsOpen = signal(false);
+  readonly viewsMenuPos = signal<FloatingPosition | null>(null);
+  /** Export-format menu; `null` when closed. */
+  readonly exportMenuPos = signal<FloatingPosition | null>(null);
+  readonly viewNameDraft = signal('');
+  /** Header menu state; `null` when closed. */
+  readonly columnMenu = signal<ColumnMenuState | null>(null);
   /** Right-click menu position; `null` when closed. */
   readonly menuState = signal<{
     row: T;
@@ -285,19 +387,49 @@ export class TableComponent<T = any> {
   } | null>(null);
   /** `${rowIndex}:${columnKey}` of the cell that was just copied (shows a check icon). */
   readonly copiedCell = signal<string | null>(null);
+  /** Row keys whose detail panel is open. */
+  private readonly expandedKeys = signal<ReadonlySet<string>>(new Set());
+  /** Cell that owns the single tab stop of the grid. */
+  readonly focusedCell = signal<{ row: number; col: number } | null>(null);
+  /** Column key being dragged, and the header it hovers. */
+  readonly dragKey = signal<string | null>(null);
+  readonly dragOverKey = signal<string | null>(null);
+  /** `true` once the scroll container is scrolled away from the top. */
+  readonly scrolled = signal(false);
+  private resizing: { key: string; startX: number; startWidth: number } | null = null;
+  private copyTimer?: ReturnType<typeof setTimeout>;
+  private measureHandle?: ReturnType<typeof requestAnimationFrame>;
+  private presetLoaded = false;
+
   readonly skeletonIndexes = computed(() =>
     Array.from({ length: Math.max(0, this.skeletonRows()) }, (_, index) => index),
   );
-  private copyTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
-    this.restorePreset();
-
-    // Persist the preset whenever the user changes it.
+    // Restore the stored preset once, then persist every later change. Restoring must
+    // happen here (not in the constructor body) because `storageKey` is an input and is
+    // still empty until the host has bound it.
     effect(() => {
-      const preset = { hidden: [...this.hiddenColumnKeys()], density: this.density() };
-      untracked(() => this.persistPreset(preset));
+      const key = this.storageKey();
+      const state = this.state();
+      void this.views();
+      void this.activeView();
+      untracked(() => {
+        if (!this.presetLoaded) {
+          this.presetLoaded = true;
+          if (!key) return;
+          const stored = this.readPreset(key);
+          if (stored) {
+            this.views.set(stored.views ?? {});
+            this.activeView.set(stored.activeView ?? null);
+            this.applyState(stored.state);
+            return;
+          }
+        }
+        this.persistPreset(key);
+      });
     });
+
     // In client mode any change to the query starts again from the first page. In server
     // mode the consumer owns the page (and fetches on every `pageChange`), so resetting
     // here would fire a second request for the same query change.
@@ -321,6 +453,17 @@ export class TableComponent<T = any> {
       if (current > lastPage) untracked(() => this.page.set(lastPage));
       else if (current < 1) untracked(() => this.page.set(1));
     });
+
+    // Sticky columns stack on measured widths, so re-measure after layout changes.
+    effect(() => {
+      this.pagedRows();
+      this.visibleColumns();
+      this.compact();
+      this.density();
+      untracked(() => this.scheduleMeasure());
+    });
+
+    afterNextRender(() => this.scheduleMeasure());
   }
 
   /* ---------------------------------------------------------------- */
@@ -329,15 +472,37 @@ export class TableComponent<T = any> {
 
   readonly isServer = computed(() => this.mode() === 'server');
 
+  /** Columns in the user's order (hidden columns keep their slot in the list). */
+  readonly orderedColumns = computed(() => {
+    const columns = this.columns();
+    const order = this.columnOrder();
+    if (!order.length) return columns;
+    const indexOf = new Map(order.map((key, index) => [key, index]));
+    return [...columns].sort(
+      (a, b) =>
+        (indexOf.get(a.key) ?? Number.MAX_SAFE_INTEGER) -
+        (indexOf.get(b.key) ?? Number.MAX_SAFE_INTEGER),
+    );
+  });
+
   readonly visibleColumns = computed(() => {
     const hidden = this.hiddenColumnKeys();
-    return this.columns().filter((column) => !column.hidden && !hidden.has(column.key));
+    return this.orderedColumns().filter((column) => !column.hidden && !hidden.has(column.key));
   });
 
   readonly selectable = computed(() => this.selectionMode() !== 'none');
 
   readonly hasActionsColumn = computed(
     () => this.rowActions().length > 0 || !!this.rowActionsTemplate(),
+  );
+
+  readonly hasRowDetail = computed(
+    () => !!this.rowDetailTemplate() && this.rowDetailTrigger() !== 'none',
+  );
+
+  /** Expander cell rendered as the first cell of every row. */
+  readonly hasExpander = computed(
+    () => this.hasRowDetail() && this.rowDetailTrigger() === 'button',
   );
 
   /** Rows that match the global search and the per-column filters (client mode). */
@@ -432,11 +597,15 @@ export class TableComponent<T = any> {
       this.pagedRows().some((row) => this.selectedKeySet().has(this.rowKey(row))),
   );
 
-  readonly emptyColspan = computed(() =>
-    Math.max(
-      1,
-      this.visibleColumns().length + (this.selectable() ? 1 : 0) + (this.hasActionsColumn() ? 1 : 0),
-    ),
+  readonly emptyColspan = computed(
+    () =>
+      Math.max(
+        1,
+        this.visibleColumns().length +
+          (this.selectable() ? 1 : 0) +
+          (this.hasActionsColumn() ? 1 : 0) +
+          (this.hasExpander() ? 1 : 0),
+      ),
   );
 
   readonly hasQuery = computed(
@@ -444,6 +613,45 @@ export class TableComponent<T = any> {
       this.search().trim() !== '' ||
       Object.values(this.filters()).some((value) => value.trim() !== ''),
   );
+
+  /** Removable chips for the active search term and filters. */
+  readonly filterChips = computed<FilterChip[]>(() => {
+    const chips: FilterChip[] = [];
+    const term = this.search().trim();
+    if (term) {
+      chips.push({ kind: 'search', key: '__search', label: 'Search', value: term });
+    }
+    for (const [key, value] of Object.entries(this.filters())) {
+      if (!value.trim()) continue;
+      const column = this.columns().find((candidate) => candidate.key === key);
+      const option = this.filterOptionsFor(column ?? { key }).find(
+        (candidate) => String(candidate.value) === value,
+      );
+      chips.push({
+        kind: 'filter',
+        key,
+        label: column?.header ?? key,
+        value: option?.label ?? value,
+      });
+    }
+    return chips;
+  });
+
+  /** Columns that declare a footer aggregate. */
+  readonly hasAggregates = computed(() =>
+    this.visibleColumns().some((column) => !!column.aggregate),
+  );
+
+  /** Full user layout, the shape that `storageKey` stores. */
+  readonly state = computed<TablePresetState>(() => ({
+    hidden: [...this.hiddenColumnKeys()],
+    density: this.density(),
+    order: this.columnOrder(),
+    widths: this.columnWidths(),
+    pinned: this.pinnedKeys(),
+  }));
+
+  readonly savedViewNames = computed(() => Object.keys(this.views()).sort());
 
   /* ---------------------------------------------------------------- */
   /* Sorting API                                                      */
@@ -504,7 +712,7 @@ export class TableComponent<T = any> {
     return column.filterType ?? 'text';
   }
 
-  filterOptionsFor(column: TableColumn<T>): TableFilterOption[] {
+  filterOptionsFor(column: Pick<TableColumn<T>, 'key'> & Partial<TableColumn<T>>): TableFilterOption[] {
     return column.filterOptions ?? [];
   }
 
@@ -535,6 +743,18 @@ export class TableComponent<T = any> {
   clearQuery(): void {
     this.search.set('');
     this.clearFilters();
+  }
+
+  /** Remove one chip from the chip row. */
+  removeChip(chip: FilterChip): void {
+    if (chip.kind === 'search') {
+      this.clearSearch();
+      return;
+    }
+    const next = { ...this.filters() };
+    delete next[chip.key];
+    this.filters.set(next);
+    this.filterChange.emit(next);
   }
 
   /* ---------------------------------------------------------------- */
@@ -641,6 +861,12 @@ export class TableComponent<T = any> {
     this.toggleRow(row, false);
   }
 
+  /** Click on a selection-bar action. */
+  onSelectionAction(action: TableSelectionAction<T>, event: MouseEvent): void {
+    event.stopPropagation();
+    this.selectionAction.emit({ action, rows: this.selected() });
+  }
+
   /* ---------------------------------------------------------------- */
   /* Row actions                                                      */
   /* ---------------------------------------------------------------- */
@@ -674,17 +900,49 @@ export class TableComponent<T = any> {
     if (event.defaultPrevented) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     if (isInteractiveTarget(event.target)) return;
-    if (!this.rowClickable() && !this.selectOnRowClick()) return;
+    if (!this.rowClickable() && !this.selectOnRowClick() && !this.togglesDetailOnRow()) return;
     event.preventDefault();
     this.activateRow(row, index, event);
   }
 
   /** Shared by mouse and keyboard activation. */
   private activateRow(row: T, index: number, event: Event): void {
-    this.rowClick.emit({ row, index, event });
+    if (this.rowClickable()) this.rowClick.emit({ row, index, event });
     if (this.selectOnRowClick() && this.selectable()) {
       this.toggleRow(row, !this.isSelected(row));
     }
+    if (this.togglesDetailOnRow()) this.toggleRowDetail(row);
+  }
+
+  private togglesDetailOnRow(): boolean {
+    return this.hasRowDetail() && this.rowDetailTrigger() === 'row';
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Row detail                                                       */
+  /* ---------------------------------------------------------------- */
+
+  isRowExpanded(row: T): boolean {
+    return this.expandedKeys().has(String(this.rowKey(row)));
+  }
+
+  toggleRowDetail(row: T, event?: Event): void {
+    event?.stopPropagation();
+    const key = String(this.rowKey(row));
+    const next = new Set(this.expandedKeys());
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    this.expandedKeys.set(next);
+  }
+
+  /** `close` callback handed to the `#ithTableRowDetail` template. */
+  rowDetailContext(row: T, index: number): TableRowDetailContext<T> {
+    return {
+      $implicit: row,
+      row,
+      index,
+      close: () => this.toggleRowDetail(row),
+    };
   }
 
   /* ---------------------------------------------------------------- */
@@ -731,7 +989,11 @@ export class TableComponent<T = any> {
 
   /** Flat class list for a header cell (NgClass rejects nested arrays). */
   headerClasses(column: TableColumn<T>): string[] {
-    return [...this.headerClassFor(column), this.stickyClassFor(column)].filter((value) => !!value);
+    return [
+      ...this.headerClassFor(column),
+      this.stickyClassFor(column),
+      this.dragOverKey() === column.key ? 'ith-table-drop-target' : '',
+    ].filter((value) => !!value);
   }
 
   filterClasses(column: TableColumn<T>): string[] {
@@ -749,18 +1011,64 @@ export class TableComponent<T = any> {
 
   columnStyle(column: TableColumn<T>): Record<string, string> {
     const style: Record<string, string> = {};
-    if (column.width) style['width'] = column.width;
-    if (column.minWidth) style['min-width'] = column.minWidth;
-    if (column.sticky === 'start') style['left'] = this.stickyStartOffset(column);
-    if (column.sticky === 'end') style['right'] = '0px';
+    const width = this.columnWidths()[column.key];
+    if (width) {
+      style['width'] = `${width}px`;
+      style['min-width'] = `${width}px`;
+      style['max-width'] = `${width}px`;
+    } else {
+      if (column.width) style['width'] = column.width;
+      if (column.minWidth) style['min-width'] = column.minWidth;
+    }
+    const pin = this.pinOf(column);
+    if (pin) {
+      const offset = this.stickyOffsets().get(column.key);
+      if (pin === 'start') style['left'] = `${offset ?? 0}px`;
+      else style['right'] = `${offset ?? 0}px`;
+    }
     return style;
   }
 
+  /** Runtime pin, falling back to the declared `column.sticky`. */
+  pinOf(column: TableColumn<T>): TablePin | null {
+    return this.pinnedKeys()[column.key] ?? column.sticky ?? null;
+  }
+
   stickyClassFor(column: TableColumn<T>): string {
-    if (column.sticky === 'start') return 'ith-table-sticky-start';
-    if (column.sticky === 'end') return 'ith-table-sticky-end';
+    const pin = this.pinOf(column);
+    if (pin === 'start') return 'ith-table-sticky-start';
+    if (pin === 'end') return 'ith-table-sticky-end';
     return '';
   }
+
+  /**
+   * Left/right offsets for stacked sticky columns. Depends on measured widths, so it
+   * stays correct for auto-sized and resized columns.
+   */
+  readonly stickyOffsets = computed(() => {
+    const offsets = new Map<string, number>();
+    const measured = this.measuredWidths();
+    const declared = this.columnWidths();
+
+    const widthOf = (column: TableColumn<T>): number =>
+      declared[column.key] ?? measured[column.key] ?? this.declaredWidthPx(column);
+
+    let start = this.selectable() && this.stickySelection() ? 46 : 0;
+    for (const column of this.visibleColumns()) {
+      if (this.pinOf(column) !== 'start') continue;
+      offsets.set(column.key, start);
+      start += widthOf(column);
+    }
+
+    let end = this.hasActionsColumn() && this.stickyActions() ? this.actionsWidthPx() : 0;
+    for (const column of [...this.visibleColumns()].reverse()) {
+      if (this.pinOf(column) !== 'end') continue;
+      offsets.set(column.key, end);
+      end += widthOf(column);
+    }
+
+    return offsets;
+  });
 
   /** Full text for the native tooltip; `null` disables it for a column. */
   tooltipText(row: T, column: TableColumn<T>, index: number): string | null {
@@ -768,18 +1076,15 @@ export class TableComponent<T = any> {
     return this.cellText(row, column, index) || null;
   }
 
-  private stickyStartOffset(column: TableColumn<T>): string {
-    let offset = this.selectable() && this.stickySelection() ? 44 : 0;
-    for (const candidate of this.visibleColumns()) {
-      if (candidate.key === column.key) break;
-      if (candidate.sticky === 'start') offset += this.columnWidthPx(candidate);
-    }
-    return `${offset}px`;
+  private declaredWidthPx(column: TableColumn<T>): number {
+    const width = column.width ?? '';
+    if (width.endsWith('px')) return Number.parseFloat(width) || DEFAULT_COLUMN_WIDTH;
+    return DEFAULT_COLUMN_WIDTH;
   }
 
-  private columnWidthPx(column: TableColumn<T>): number {
-    const width = column.width ?? '';
-    return width.endsWith('px') ? Number.parseFloat(width) || 0 : 0;
+  private actionsWidthPx(): number {
+    const width = this.actionsWidth();
+    return width.endsWith('px') ? Number.parseFloat(width) || 120 : 120;
   }
 
   /* ---------------------------------------------------------------- */
@@ -804,15 +1109,6 @@ export class TableComponent<T = any> {
 
   isCellCopied(index: number, column: TableColumn<T>): boolean {
     return this.copiedCell() === `${index}:${column.key}`;
-  }
-
-  /** Ctrl/Cmd+C while a cell has focus copies that cell. */
-  onCellKeydown(row: T, column: TableColumn<T>, index: number, event: KeyboardEvent): void {
-    if (!this.copyable()) return;
-    if (event.key.toLowerCase() !== 'c' || !(event.ctrlKey || event.metaKey)) return;
-    if (isInteractiveTarget(event.target)) return;
-    event.preventDefault();
-    this.copyCell(row, column, index);
   }
 
   onRowContextMenu(row: T, index: number, event: MouseEvent): void {
@@ -840,6 +1136,105 @@ export class TableComponent<T = any> {
   }
 
   /* ---------------------------------------------------------------- */
+  /* Keyboard grid navigation                                         */
+  /* ---------------------------------------------------------------- */
+
+  /** `tabindex` of a body cell: one tab stop for the whole grid. */
+  cellTabIndex(rowIndex: number, colIndex: number): number | null {
+    if (!this.keyboardNavigation()) return this.copyable() ? 0 : null;
+    const focused = this.focusedCell();
+    if (!focused) return rowIndex === 0 && colIndex === 0 ? 0 : -1;
+    return focused.row === rowIndex && focused.col === colIndex ? 0 : -1;
+  }
+
+  onCellFocus(rowIndex: number, colIndex: number): void {
+    const current = this.focusedCell();
+    if (current && current.row === rowIndex && current.col === colIndex) return;
+    this.focusedCell.set({ row: rowIndex, col: colIndex });
+  }
+
+  /** Copy shortcut plus arrow/Home/End/Page navigation for the cell grid. */
+  onCellKeydown(column: TableColumn<T>, rowIndex: number, colIndex: number, event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+      if (!this.copyable() || isInteractiveTarget(event.target)) return;
+      event.preventDefault();
+      const row = this.pagedRows()[rowIndex];
+      if (row) this.copyCell(row, column, rowIndex);
+      return;
+    }
+
+    if (!this.keyboardNavigation() || event.altKey) return;
+    const rows = this.pagedRows().length;
+    const cols = this.visibleColumns().length;
+    if (!rows || !cols) return;
+
+    const lastRow = rows - 1;
+    const lastCol = cols - 1;
+    let row = rowIndex;
+    let col = colIndex;
+
+    switch (event.key) {
+      case 'ArrowUp':
+        row = Math.max(0, rowIndex - 1);
+        break;
+      case 'ArrowDown':
+        row = Math.min(lastRow, rowIndex + 1);
+        break;
+      case 'ArrowLeft':
+        col = Math.max(0, colIndex - 1);
+        break;
+      case 'ArrowRight':
+        col = Math.min(lastCol, colIndex + 1);
+        break;
+      case 'Home':
+        if (event.ctrlKey || event.metaKey) {
+          row = 0;
+          col = 0;
+        } else {
+          col = 0;
+        }
+        break;
+      case 'End':
+        if (event.ctrlKey || event.metaKey) {
+          row = lastRow;
+          col = lastCol;
+        } else {
+          col = lastCol;
+        }
+        break;
+      case 'PageUp':
+        row = Math.max(0, rowIndex - this.pageSize());
+        break;
+      case 'PageDown':
+        row = Math.min(lastRow, rowIndex + this.pageSize());
+        break;
+      case ' ':
+      case 'Spacebar': {
+        const target = this.pagedRows()[rowIndex];
+        if (!target || !this.selectable() || isInteractiveTarget(event.target)) return;
+        event.preventDefault();
+        this.toggleRow(target, !this.isSelected(target));
+        return;
+      }
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    if (row === rowIndex && col === colIndex) return;
+    this.focusCell(row, col);
+  }
+
+  /** Move DOM focus to a cell, updating the single tab stop. */
+  private focusCell(row: number, col: number): void {
+    this.focusedCell.set({ row, col });
+    const target = this.host.nativeElement.querySelector<HTMLElement>(
+      `[data-cell="${row}-${col}"]`,
+    );
+    target?.focus();
+  }
+
+  /* ---------------------------------------------------------------- */
   /* Column preset / density                                          */
   /* ---------------------------------------------------------------- */
 
@@ -850,6 +1245,7 @@ export class TableComponent<T = any> {
   setColumnVisible(key: string, visible: boolean): void {
     const next = new Set(this.hiddenColumnKeys());
     if (visible) next.delete(key);
+    else if (!this.canHide(key)) return;
     else next.add(key);
 
     // Never hide every column: keep at least one visible.
@@ -859,22 +1255,410 @@ export class TableComponent<T = any> {
     if (visibleCount === 0) return;
 
     this.hiddenColumnKeys.set(next);
-    this.columnsChange.emit(this.visibleColumns().map((column) => column.key));
+    this.emitColumns();
   }
 
   resetColumns(): void {
     this.hiddenColumnKeys.set(new Set());
-    this.columnsChange.emit(this.visibleColumns().map((column) => column.key));
+    this.columnOrder.set([]);
+    this.columnWidths.set({});
+    this.pinnedKeys.set({});
+    this.emitColumns();
   }
 
-  toggleColumnPicker(): void {
-    this.columnPickerOpen.update((open) => !open);
+  /** A column can be hidden when it is hideable and at least one other stays visible. */
+  canHide(key: string): boolean {
+    const column = this.columns().find((candidate) => candidate.key === key);
+    if (column?.hideable === false) return false;
+    return this.visibleColumns().length > 1;
+  }
+
+  private emitColumns(): void {
+    this.columnsChange.emit(this.visibleColumns().map((column) => column.key));
+    this.columnStateChange.emit(this.state());
+  }
+
+  toggleColumnPicker(event?: Event): void {
+    event?.stopPropagation();
+    if (this.columnPickerOpen()) {
+      this.columnPickerOpen.set(false);
+      return;
+    }
+    const anchor = event?.currentTarget;
+    if (anchor instanceof HTMLElement) {
+      this.columnsMenuPos.set(this.floatPosition(anchor, 250, 380));
+    }
+    this.columnPickerOpen.set(true);
+    this.viewsOpen.set(false);
+    this.columnMenu.set(null);
+  }
+
+  toggleViews(event?: Event): void {
+    event?.stopPropagation();
+    if (this.viewsOpen()) {
+      this.viewsOpen.set(false);
+      return;
+    }
+    const anchor = event?.currentTarget;
+    if (anchor instanceof HTMLElement) {
+      this.viewsMenuPos.set(this.floatPosition(anchor, 260, 340));
+    }
+    this.viewsOpen.set(true);
+    this.columnPickerOpen.set(false);
+    this.columnMenu.set(null);
+  }
+
+  /** Set the row density explicitly (the toolbar segmented control). */
+  setDensity(density: TableDensity): void {
+    if (this.density() === density) return;
+    this.density.set(density);
+    this.densityChange.emit(density);
   }
 
   toggleDensity(): void {
-    this.density.update((density) => (density === 'compact' ? 'comfortable' : 'compact'));
-    this.densityChange.emit(this.density());
+    this.setDensity(this.density() === 'compact' ? 'comfortable' : 'compact');
   }
+
+  /* ---- header menu ------------------------------------------------- */
+
+  openColumnMenu(column: TableColumn<T>, event: Event): void {
+    event.stopPropagation();
+    const anchor = event.currentTarget;
+    if (!(anchor instanceof HTMLElement)) return;
+    if (this.columnMenu()?.key === column.key) {
+      this.columnMenu.set(null);
+      return;
+    }
+    const position = this.floatPosition(anchor, 220, 300);
+    this.columnMenu.set({ key: column.key, ...position });
+    this.columnPickerOpen.set(false);
+    this.viewsOpen.set(false);
+  }
+
+  columnMenuColumn(): TableColumn<T> | undefined {
+    const menu = this.columnMenu();
+    return menu ? this.columns().find((column) => column.key === menu.key) : undefined;
+  }
+
+  closeColumnMenu(): void {
+    this.columnMenu.set(null);
+  }
+
+  menuSort(direction: TableSortDirection): void {
+    const column = this.columnMenuColumn();
+    if (column) this.sort.set({ key: column.key, direction });
+    this.closeColumnMenu();
+  }
+
+  menuClearSort(): void {
+    this.sort.set(null);
+    this.closeColumnMenu();
+  }
+
+  menuPin(pin: TablePin | null): void {
+    const column = this.columnMenuColumn();
+    if (column) this.pinColumn(column.key, pin);
+    this.closeColumnMenu();
+  }
+
+  menuHide(): void {
+    const column = this.columnMenuColumn();
+    if (column) this.setColumnVisible(column.key, false);
+    this.closeColumnMenu();
+  }
+
+  menuAutosize(): void {
+    const column = this.columnMenuColumn();
+    if (column) this.autosizeColumn(column.key);
+    this.closeColumnMenu();
+  }
+
+  canPin(column: TableColumn<T>): boolean {
+    return column.pinnable !== false;
+  }
+
+  pinColumn(key: string, pin: TablePin | null): void {
+    const next = { ...this.pinnedKeys() };
+    if (pin) next[key] = pin;
+    else delete next[key];
+    this.pinnedKeys.set(next);
+    this.emitColumns();
+  }
+
+  /* ---- resize ------------------------------------------------------ */
+
+  startResize(column: TableColumn<T>, event: PointerEvent): void {
+    if (!this.resizable()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const header = (event.target as HTMLElement).closest('th');
+    const startWidth = header?.getBoundingClientRect().width ?? this.declaredWidthPx(column);
+    this.resizing = { key: column.key, startX: event.clientX, startWidth };
+    document.body.style.userSelect = 'none';
+  }
+
+  @HostListener('document:pointermove', ['$event'])
+  onDocumentPointerMove(event: PointerEvent): void {
+    if (!this.resizing) return;
+    const width = Math.max(
+      MIN_COLUMN_WIDTH,
+      Math.round(this.resizing.startWidth + event.clientX - this.resizing.startX),
+    );
+    this.columnWidths.set({ ...this.columnWidths(), [this.resizing.key]: width });
+  }
+
+  @HostListener('document:pointerup')
+  onDocumentPointerUp(): void {
+    if (!this.resizing) return;
+    this.resizing = null;
+    document.body.style.userSelect = '';
+    this.scheduleMeasure();
+    this.columnStateChange.emit(this.state());
+  }
+
+  /** Shrink/grow a column to its widest rendered value. */
+  autosizeColumn(key: string): void {
+    const column = this.visibleColumns().find((candidate) => candidate.key === key);
+    if (!column) return;
+    const header = String(column.header ?? column.key);
+    const widths = this.pagedRows().map((row, index) =>
+      this.cellText(row, column, index).length,
+    );
+    const longest = Math.max(header.length, ...widths, 4);
+    const width = Math.min(460, Math.max(MIN_COLUMN_WIDTH, Math.round(longest * 7.6) + 46));
+    this.columnWidths.set({ ...this.columnWidths(), [key]: width });
+    this.columnStateChange.emit(this.state());
+  }
+
+  /* ---- reorder ----------------------------------------------------- */
+
+  onHeaderDragStart(column: TableColumn<T>, event: DragEvent): void {
+    if (!this.reorderable()) {
+      event.preventDefault();
+      return;
+    }
+    this.dragKey.set(column.key);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', column.key);
+    }
+  }
+
+  onHeaderDragOver(column: TableColumn<T>, event: DragEvent): void {
+    if (!this.reorderable() || !this.dragKey()) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    if (this.dragOverKey() !== column.key) this.dragOverKey.set(column.key);
+  }
+
+  onHeaderDrop(column: TableColumn<T>, event: DragEvent): void {
+    if (!this.reorderable()) return;
+    event.preventDefault();
+    const from = this.dragKey();
+    this.dragKey.set(null);
+    this.dragOverKey.set(null);
+    if (!from || from === column.key) return;
+    this.moveColumn(from, column.key);
+  }
+
+  onHeaderDragEnd(): void {
+    this.dragKey.set(null);
+    this.dragOverKey.set(null);
+  }
+
+  /** Move `from` onto the slot of `to`, keeping hidden columns in the list. */
+  moveColumn(from: string, to: string): void {
+    const order = this.orderedColumns().map((column) => column.key);
+    const fromIndex = order.indexOf(from);
+    const toIndex = order.indexOf(to);
+    if (fromIndex < 0 || toIndex < 0) return;
+    order.splice(fromIndex, 1);
+    order.splice(toIndex, 0, from);
+    this.columnOrder.set(order);
+    this.emitColumns();
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Export                                                           */
+  /* ---------------------------------------------------------------- */
+
+  /** Rows an export writes: the selection when there is one, else every match. */
+  exportRows(): T[] {
+    return this.selected().length ? this.selected() : this.sortedRows();
+  }
+
+  toggleExportMenu(event?: Event): void {
+    event?.stopPropagation();
+    if (this.exportMenuPos()) {
+      this.exportMenuPos.set(null);
+      return;
+    }
+    const anchor = event?.currentTarget;
+    this.exportMenuPos.set(
+      anchor instanceof HTMLElement ? this.floatPosition(anchor, 210, 170) : { x: 8, y: 8 },
+    );
+    this.columnPickerOpen.set(false);
+    this.viewsOpen.set(false);
+    this.columnMenu.set(null);
+  }
+
+  exportAs(format: 'csv' | 'xlsx'): void {
+    this.exportMenuPos.set(null);
+    if (format === 'xlsx') this.downloadExcel();
+    else this.downloadCsv();
+  }
+
+  /** CSV text of the current view: selected rows when there are any, else all matches. */
+  toCsv(): string {
+    const columns = this.visibleColumns();
+    const rows = this.exportRows();
+    const escapeValue = (value: string): string =>
+      /[",;\n\r]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+
+    const header = columns.map((column) => escapeValue(String(column.header ?? column.key)));
+    const body = rows.map((row, index) =>
+      columns.map((column) => escapeValue(this.cellText(row, column, index))).join(','),
+    );
+    return [header.join(','), ...body].join('\r\n');
+  }
+
+  /** Download the current view as a UTF-8 CSV file. */
+  downloadCsv(): void {
+    const csv = this.toCsv();
+    this.csvExport.emit(csv);
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+    this.saveFile(blob, `${this.exportFileName()}.csv`, 'csv');
+  }
+
+  /** Real Excel workbook (`.xlsx`) of the current view, built without dependencies. */
+  toExcel(): Blob {
+    const columns = this.visibleColumns();
+    const rows = this.exportRows();
+    return buildXlsxBlob({
+      sheetName: this.title() || 'Data',
+      header: columns.map((column) => String(column.header ?? column.key)),
+      rows: rows.map((row, index) =>
+        columns.map((column) => this.cellText(row, column, index)),
+      ),
+    });
+  }
+
+  /** Download the current view as an `.xlsx` workbook. */
+  downloadExcel(): void {
+    this.saveFile(this.toExcel(), `${this.exportFileName()}.xlsx`, 'xlsx');
+  }
+
+  private saveFile(blob: Blob, fileName: string, format: 'csv' | 'xlsx'): void {
+    this.exportFile.emit({ format, fileName, blob, rows: this.exportRows() });
+    if (typeof document === 'undefined' || typeof URL === 'undefined') return;
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Aggregates                                                       */
+  /* ---------------------------------------------------------------- */
+
+  /** Footer cell text for a column that declares an `aggregate`. */
+  aggregateText(column: TableColumn<T>): string {
+    if (!column.aggregate) return '';
+    const aggregate: TableAggregate<T> =
+      typeof column.aggregate === 'string' ? { type: column.aggregate } : column.aggregate;
+    const rows = this.isServer() ? this.data() : this.sortedRows();
+
+    if (aggregate.type === 'count') {
+      return String(rows.length);
+    }
+
+    const numbers = rows
+      .map((row) => Number(this.cellValue(row, column)))
+      .filter((value) => Number.isFinite(value));
+    if (!numbers.length) return '';
+
+    let value = 0;
+    switch (aggregate.type) {
+      case 'sum':
+        value = numbers.reduce((total, next) => total + next, 0);
+        break;
+      case 'avg':
+        value = numbers.reduce((total, next) => total + next, 0) / numbers.length;
+        break;
+      case 'min':
+        value = Math.min(...numbers);
+        break;
+      case 'max':
+        value = Math.max(...numbers);
+        break;
+    }
+
+    if (aggregate.format) return aggregate.format(value, column);
+    return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  }
+
+  aggregateLabel(column: TableColumn<T>): string {
+    if (!column.aggregate) return '';
+    if (typeof column.aggregate !== 'string' && column.aggregate.label) {
+      return column.aggregate.label;
+    }
+    const type: TableAggregateType =
+      typeof column.aggregate === 'string' ? column.aggregate : column.aggregate.type;
+    return type;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Named views                                                      */
+  /* ---------------------------------------------------------------- */
+
+  applyView(name: string): void {
+    const view = this.views()[name];
+    if (!view) return;
+    this.applyState(view);
+    this.activeView.set(name);
+    this.viewsOpen.set(false);
+    this.emitColumns();
+  }
+
+  saveView(): void {
+    const name = this.viewNameDraft().trim();
+    if (!name) return;
+    this.views.set({ ...this.views(), [name]: this.state() });
+    this.activeView.set(name);
+    this.viewNameDraft.set('');
+  }
+
+  deleteView(name: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const next = { ...this.views() };
+    delete next[name];
+    this.views.set(next);
+    if (this.activeView() === name) this.activeView.set(null);
+  }
+
+  onViewNameInput(value: string): void {
+    this.viewNameDraft.set(value);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Scroll                                                           */
+  /* ---------------------------------------------------------------- */
+
+  onScroll(event: Event): void {
+    const target = event.target as HTMLElement;
+    const scrolled = target.scrollTop > 0;
+    if (scrolled !== this.scrolled()) this.scrolled.set(scrolled);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Internals                                                        */
+  /* ---------------------------------------------------------------- */
 
   private copyText(value: string, key: string): void {
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
@@ -885,31 +1669,112 @@ export class TableComponent<T = any> {
     this.copyTimer = setTimeout(() => this.copiedCell.set(null), 1400);
   }
 
-  private restorePreset(): void {
-    const preset = this.readPreset();
-    if (!preset) return;
-    if (Array.isArray(preset.hidden)) this.hiddenColumnKeys.set(new Set(preset.hidden));
-    if (preset.density === 'compact' || preset.density === 'comfortable') {
-      this.density.set(preset.density);
+  /** Screen position for a menu anchored to `anchor`, kept inside the viewport. */
+  private floatPosition(anchor: HTMLElement, width: number, height: number): FloatingPosition {
+    const rect = anchor.getBoundingClientRect();
+    const viewportWidth = typeof window === 'undefined' ? 1280 : window.innerWidth;
+    const viewportHeight = typeof window === 'undefined' ? 800 : window.innerHeight;
+    const x = Math.min(Math.max(8, rect.right - width), Math.max(8, viewportWidth - width - 8));
+    const y = Math.min(rect.bottom + 6, Math.max(8, viewportHeight - height - 8));
+    return { x, y };
+  }
+
+  /** Read header widths so stacked sticky columns line up. */
+  private measureHeaderWidths(): void {
+    const headers = this.host.nativeElement.querySelectorAll<HTMLElement>('th[data-col]');
+    if (!headers.length) return;
+    const next: Record<string, number> = {};
+    headers.forEach((header) => {
+      const key = header.dataset['col'];
+      if (!key) return;
+      const width = Math.round(header.getBoundingClientRect().width);
+      if (width > 0) next[key] = width;
+    });
+    const current = this.measuredWidths();
+    const keys = Object.keys(next);
+    const changed =
+      keys.length !== Object.keys(current).length ||
+      keys.some((key) => Math.abs((current[key] ?? 0) - next[key]) > 0.5);
+    if (changed) this.measuredWidths.set(next);
+  }
+
+  private scheduleMeasure(): void {
+    if (typeof requestAnimationFrame === 'undefined') return;
+    if (this.measureHandle) cancelAnimationFrame(this.measureHandle);
+    this.measureHandle = requestAnimationFrame(() => {
+      this.measureHandle = undefined;
+      this.measureHeaderWidths();
+    });
+  }
+
+  private applyState(state: Partial<TablePresetState> | null | undefined): void {
+    if (!state) return;
+    if (Array.isArray(state.hidden)) this.hiddenColumnKeys.set(new Set(state.hidden));
+    if (state.density === 'compact' || state.density === 'comfortable') {
+      this.density.set(state.density);
+    }
+    if (Array.isArray(state.order)) this.columnOrder.set([...state.order]);
+    if (state.widths && typeof state.widths === 'object') {
+      this.columnWidths.set({ ...state.widths });
+    }
+    if (state.pinned && typeof state.pinned === 'object') {
+      this.pinnedKeys.set({ ...state.pinned });
     }
   }
 
-  private readPreset(): { hidden?: string[]; density?: TableDensity } | null {
-    const key = this.storageKey();
+  private readPreset(key: string): {
+    state: TablePresetState | null;
+    views: Record<string, TablePresetState>;
+    activeView: string | null;
+  } | null {
     if (!key || typeof localStorage === 'undefined') return null;
     try {
       const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        v?: number;
+        state?: TablePresetState;
+        views?: Record<string, TablePresetState>;
+        activeView?: string | null;
+        /** Legacy (v1) shape. */
+        hidden?: string[];
+        density?: TableDensity;
+      };
+      if (parsed.state) {
+        return {
+          state: parsed.state,
+          views: parsed.views ?? {},
+          activeView: parsed.activeView ?? null,
+        };
+      }
+      return {
+        state: {
+          hidden: Array.isArray(parsed.hidden) ? parsed.hidden : [],
+          density: parsed.density === 'compact' ? 'compact' : 'comfortable',
+          order: [],
+          widths: {},
+          pinned: {},
+        },
+        views: {},
+        activeView: null,
+      };
     } catch {
       return null;
     }
   }
 
-  private persistPreset(preset: { hidden: string[]; density: TableDensity }): void {
-    const key = this.storageKey();
+  private persistPreset(key: string): void {
     if (!key || typeof localStorage === 'undefined') return;
     try {
-      localStorage.setItem(key, JSON.stringify(preset));
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          v: 2,
+          state: this.state(),
+          views: this.views(),
+          activeView: this.activeView(),
+        }),
+      );
     } catch {
       // Storage disabled (private mode) — the preset simply stays in memory.
     }
@@ -919,12 +1784,14 @@ export class TableComponent<T = any> {
   onDocumentClick(): void {
     this.closeRowMenu();
     this.columnPickerOpen.set(false);
+    this.viewsOpen.set(false);
+    this.columnMenu.set(null);
+    this.exportMenuPos.set(null);
   }
 
   @HostListener('document:keydown.escape')
   onDocumentEscape(): void {
-    this.closeRowMenu();
-    this.columnPickerOpen.set(false);
+    this.onDocumentClick();
   }
 
   alignClass(column: TableColumn<T>): string {
@@ -961,10 +1828,6 @@ export class TableComponent<T = any> {
   emptyContext(): Record<string, unknown> {
     return { ...this.toolbarContext() };
   }
-
-  /* ---------------------------------------------------------------- */
-  /* Internals                                                        */
-  /* ---------------------------------------------------------------- */
 
   private compareRows(a: T, b: T, column: TableColumn<T>): number {
     if (column.sortFn) return column.sortFn(a, b);

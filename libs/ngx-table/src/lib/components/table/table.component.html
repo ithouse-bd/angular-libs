@@ -28,64 +28,84 @@
         <div class="ith-table-toolbar-spacer"></div>
 
         <div class="ith-table-toolbar-actions">
+          @if (showViews()) {
+            <div class="ith-table-menu-anchor" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="ith-table-tool-btn"
+                aria-haspopup="true"
+                [attr.aria-expanded]="viewsOpen()"
+                (click)="toggleViews($event)">
+                <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 6h16M4 12h10M4 18h7" />
+                </svg>
+                <span>Views</span>
+              </button>
+            </div>
+          }
+
           @if (showColumnPicker()) {
-            <div class="ith-table-columns" (click)="$event.stopPropagation()">
+            <div class="ith-table-menu-anchor" (click)="$event.stopPropagation()">
               <button
                 type="button"
                 class="ith-table-tool-btn"
                 aria-haspopup="true"
                 [attr.aria-expanded]="columnPickerOpen()"
-                (click)="toggleColumnPicker()">
+                (click)="toggleColumnPicker($event)">
                 <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <rect x="3" y="4" width="7" height="16" rx="1.5" />
                   <rect x="14" y="4" width="7" height="16" rx="1.5" />
                 </svg>
                 <span>Columns</span>
               </button>
-              @if (columnPickerOpen()) {
-                <div class="ith-table-columns-popover" role="dialog" aria-label="Visible columns">
-                  <div class="ith-table-columns-header">Show columns</div>
-                  <div class="ith-table-columns-list">
-                    @for (column of columns(); track column.key) {
-                      <label class="ith-table-columns-item">
-                        <input
-                          type="checkbox"
-                          class="ith-table-checkbox"
-                          [checked]="isColumnVisible(column)"
-                          [disabled]="column.hidden"
-                          (change)="setColumnVisible(column.key, $any($event.target).checked)" />
-                        <span>{{ column.header ?? column.key }}</span>
-                      </label>
-                    }
-                  </div>
-                  <div class="ith-table-columns-footer">
-                    <button type="button" class="ith-table-columns-reset" (click)="resetColumns()">
-                      Reset columns
-                    </button>
-                  </div>
-                </div>
-              }
             </div>
           }
 
           @if (showDensityToggle()) {
-            <button
-              type="button"
-              class="ith-table-tool-btn"
-              [attr.aria-pressed]="compact()"
-              (click)="toggleDensity()">
-              @if (compact()) {
-                <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-                  <path d="M4 7h16M4 12h16M4 17h16" />
+            <div class="ith-table-segmented" role="group" aria-label="Row density">
+              <button
+                type="button"
+                class="ith-table-segmented-btn"
+                [class.is-active]="!compact()"
+                [attr.aria-pressed]="!compact()"
+                title="Comfortable rows"
+                (click)="setDensity('comfortable')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                  <path d="M4 8h16M4 16h16" />
                 </svg>
                 <span>Comfortable</span>
-              } @else {
-                <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+              </button>
+              <button
+                type="button"
+                class="ith-table-segmented-btn"
+                [class.is-active]="compact()"
+                [attr.aria-pressed]="compact()"
+                title="Compact rows"
+                (click)="setDensity('compact')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
                   <path d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                 </svg>
                 <span>Compact</span>
-              }
-            </button>
+              </button>
+            </div>
+          }
+
+          @if (showExport()) {
+            <div class="ith-table-menu-anchor" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="ith-table-tool-btn"
+                aria-haspopup="true"
+                [attr.aria-expanded]="!!exportMenuPos()"
+                title="Export the current view"
+                (click)="toggleExportMenu($event)">
+                <svg class="ith-table-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 4v11m0 0 4-4m-4 4-4-4" />
+                  <path d="M4 19h16" />
+                </svg>
+                <span>Export</span>
+              </button>
+            </div>
           }
 
           @if (searchable()) {
@@ -112,11 +132,67 @@
           }
         </div>
       </div>
+
+      @if (showFilterChips() && hasQuery()) {
+        <div class="ith-table-chips">
+          @for (chip of filterChips(); track chip.kind + chip.key) {
+            <span class="ith-table-chip">
+              <span class="ith-table-chip-label">{{ chip.label }}</span>
+              <span class="ith-table-chip-value">{{ chip.value }}</span>
+              <button
+                type="button"
+                class="ith-table-chip-remove"
+                [attr.aria-label]="'Remove ' + chip.label + ' filter'"
+                (click)="removeChip(chip)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </span>
+          }
+          <button type="button" class="ith-table-chips-clear" (click)="clearQuery()">Clear all</button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Bulk actions for the current selection -->
+  @if (selected().length > 0 && selectionActions().length) {
+    <div class="ith-table-selection-bar" role="region" aria-label="Selection actions">
+      <span class="ith-table-selection-count">
+        <strong>{{ selected().length }}</strong> selected
+      </span>
+      <span class="ith-table-selection-spacer"></span>
+      <div class="ith-table-selection-actions">
+        @for (action of selectionActions(); track action.id) {
+          <button
+            type="button"
+            class="ith-table-selection-btn"
+            [ngClass]="action.class ?? ''"
+            [attr.title]="action.title ?? action.label"
+            (click)="onSelectionAction(action, $event)">
+            @if (action.icon) {
+              <span class="ith-table-selection-icon" aria-hidden="true">{{ action.icon }}</span>
+            }
+            <span>{{ action.label }}</span>
+          </button>
+        }
+        <button type="button" class="ith-table-selection-clear" (click)="clearSelection()">
+          Clear selection
+        </button>
+      </div>
     </div>
   }
 
   <!-- Table -->
-  <div class="ith-table-scroll" [style.maxHeight]="maxHeight() || null">
+  <div
+    class="ith-table-scroll"
+    [class.ith-table-scroll-bounded]="!!maxHeight()"
+    [class.ith-table-scroll-filtered]="showFilters()"
+    [class.is-scrolled]="scrolled()"
+    [style.maxHeight]="maxHeight() || null"
+    [style.--_min-rows]="minRows()"
+    (scroll)="onScroll($event)">
     <table class="ith-table-grid" [attr.aria-label]="ariaLabel()" [attr.aria-busy]="loading()">
       <thead>
         <tr class="ith-table-head-row">
@@ -138,32 +214,73 @@
             </th>
           }
 
+          @if (hasExpander()) {
+            <th scope="col" class="ith-table-expander-cell" [attr.aria-label]="'Row details'"></th>
+          }
+
           @for (column of visibleColumns(); track column.key) {
             <th
               scope="col"
               class="ith-table-th"
               [ngClass]="headerClasses(column)"
               [style]="columnStyle(column)"
-              [attr.aria-sort]="isSortable(column) ? ariaSort(column) : null">
-              @if (headerTemplate(column); as headerTpl) {
-                <ng-container
-                  [ngTemplateOutlet]="headerTpl"
-                  [ngTemplateOutletContext]="{ $implicit: column, column: column }" />
-              } @else if (isSortable(column)) {
-                <button
-                  type="button"
-                  class="ith-table-sort"
-                  [class.is-sorted]="!!sortDirection(column)"
-                  (click)="toggleSort(column)"
-                  [attr.aria-label]="'Sort by ' + (column.header ?? column.key)">
+              [attr.data-col]="column.key"
+              [attr.aria-sort]="isSortable(column) ? ariaSort(column) : null"
+              [attr.draggable]="reorderable() ? 'true' : null"
+              [class.ith-table-th-dragging]="dragKey() === column.key"
+              (dragstart)="onHeaderDragStart(column, $event)"
+              (dragover)="onHeaderDragOver(column, $event)"
+              (drop)="onHeaderDrop(column, $event)"
+              (dragend)="onHeaderDragEnd()">
+              <div class="ith-table-th-inner">
+                @if (headerTemplate(column); as headerTpl) {
+                  <ng-container
+                    [ngTemplateOutlet]="headerTpl"
+                    [ngTemplateOutletContext]="{ $implicit: column, column: column }" />
+                } @else if (isSortable(column)) {
+                  <button
+                    type="button"
+                    class="ith-table-sort"
+                    [class.is-sorted]="!!sortDirection(column)"
+                    (click)="toggleSort(column)"
+                    [attr.aria-label]="'Sort by ' + (column.header ?? column.key)">
+                    <span class="ith-table-th-label">{{ column.header ?? column.key }}</span>
+                    <span class="ith-table-sort-icons" aria-hidden="true">
+                      <svg viewBox="0 0 10 6" class="ith-table-sort-up" [class.is-active]="sortDirection(column) === 'asc'"><path d="M5 0l5 6H0z" /></svg>
+                      <svg viewBox="0 0 10 6" class="ith-table-sort-down" [class.is-active]="sortDirection(column) === 'desc'"><path d="M5 6L0 0h10z" /></svg>
+                    </span>
+                  </button>
+                } @else {
                   <span class="ith-table-th-label">{{ column.header ?? column.key }}</span>
-                  <span class="ith-table-sort-icons" aria-hidden="true">
-                    <svg viewBox="0 0 10 6" class="ith-table-sort-up" [class.is-active]="sortDirection(column) === 'asc'"><path d="M5 0l5 6H0z" /></svg>
-                    <svg viewBox="0 0 10 6" class="ith-table-sort-down" [class.is-active]="sortDirection(column) === 'desc'"><path d="M5 6L0 0h10z" /></svg>
-                  </span>
-                </button>
-              } @else {
-                <span class="ith-table-th-label">{{ column.header ?? column.key }}</span>
+                }
+
+                @if (showColumnMenu()) {
+                  <button
+                    type="button"
+                    class="ith-table-th-menu"
+                    [attr.aria-expanded]="columnMenu()?.key === column.key"
+                    [attr.aria-label]="'Column options for ' + (column.header ?? column.key)"
+                    (click)="openColumnMenu(column, $event)">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <circle cx="12" cy="5" r="1.7" />
+                      <circle cx="12" cy="12" r="1.7" />
+                      <circle cx="12" cy="19" r="1.7" />
+                    </svg>
+                  </button>
+                }
+
+                @if (pinOf(column) === 'start') {
+                  <span class="ith-table-pin-dot" aria-hidden="true"></span>
+                }
+              </div>
+
+              @if (resizable()) {
+                <span
+                  class="ith-table-resizer"
+                  role="separator"
+                  aria-orientation="vertical"
+                  [attr.aria-label]="'Resize ' + (column.header ?? column.key)"
+                  (pointerdown)="startResize(column, $event)"></span>
               }
             </th>
           }
@@ -187,6 +304,9 @@
                 class="ith-table-select-cell"
                 [class.ith-table-sticky-start]="stickySelection()"
                 [style.left]="stickySelection() ? '0px' : null"></th>
+            }
+            @if (hasExpander()) {
+              <th class="ith-table-expander-cell"></th>
             }
             @for (column of visibleColumns(); track column.key) {
               <th
@@ -263,6 +383,9 @@
                   <span class="ith-table-skeleton is-check"></span>
                 </td>
               }
+              @if (hasExpander()) {
+                <td class="ith-table-expander-cell"></td>
+              }
               @for (column of visibleColumns(); track column.key) {
                 <td class="ith-table-td">
                   <span class="ith-table-skeleton"></span>
@@ -304,9 +427,10 @@
             <tr
               class="ith-table-row"
               [ngClass]="rowClassFor(row, $index)"
-              [class.ith-table-row-clickable]="rowClickable() || selectOnRowClick()"
+              [class.ith-table-row-clickable]="rowClickable() || selectOnRowClick() || (hasRowDetail() && rowDetailTrigger() === 'row')"
               [attr.tabindex]="rowClickable() || selectOnRowClick() ? 0 : null"
               [attr.aria-selected]="selectable() ? isSelected(row) : null"
+              [attr.aria-expanded]="hasRowDetail() ? isRowExpanded(row) : null"
               (click)="onRowClick(row, $index, $event)"
               (keydown)="onRowKeydown(row, $index, $event)"
               (contextmenu)="onRowContextMenu(row, $index, $event)">
@@ -325,15 +449,34 @@
                 </td>
               }
 
-              @for (column of visibleColumns(); track column.key) {
+              @if (hasExpander()) {
+                <td class="ith-table-expander-cell">
+                  <button
+                    type="button"
+                    class="ith-table-expander"
+                    [class.is-open]="isRowExpanded(row)"
+                    [attr.aria-expanded]="isRowExpanded(row)"
+                    [attr.aria-label]="'Toggle details for row ' + ($index + 1)"
+                    (click)="toggleRowDetail(row, $event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="m9 6 6 6-6 6" />
+                    </svg>
+                  </button>
+                </td>
+              }
+
+              @for (column of visibleColumns(); track column.key; let colIndex = $index) {
                 <td
                   class="ith-table-td"
                   [class.ith-table-copyable]="copyable()"
                   [ngClass]="cellClasses(row, column, rowIndex)"
                   [style]="columnStyle(column)"
                   [attr.title]="tooltipText(row, column, rowIndex)"
-                  [attr.tabindex]="copyable() ? 0 : null"
-                  (keydown)="onCellKeydown(row, column, rowIndex, $event)">
+                  [attr.data-cell]="rowIndex + '-' + colIndex"
+                  [attr.data-col]="column.key"
+                  [attr.tabindex]="cellTabIndex(rowIndex, colIndex)"
+                  (focus)="onCellFocus(rowIndex, colIndex)"
+                  (keydown)="onCellKeydown(column, rowIndex, colIndex, $event)">
                   @if (cellTemplate(column); as cellTpl) {
                     <ng-container
                       [ngTemplateOutlet]="cellTpl"
@@ -388,9 +531,54 @@
                 </td>
               }
             </tr>
+
+            @if (hasRowDetail() && isRowExpanded(row)) {
+              <tr class="ith-table-detail-row">
+                <td [attr.colspan]="emptyColspan()">
+                  @if (rowDetailTemplate(); as detailTpl) {
+                    <ng-container
+                      [ngTemplateOutlet]="detailTpl"
+                      [ngTemplateOutletContext]="rowDetailContext(row, rowIndex)" />
+                  }
+                </td>
+              </tr>
+            }
           }
         }
       </tbody>
+
+      @if (hasAggregates() && pagedRows().length > 0) {
+        <tfoot>
+          <tr class="ith-table-total-row">
+            @if (selectable()) {
+              <td
+                class="ith-table-select-cell"
+                [class.ith-table-sticky-start]="stickySelection()"
+                [style.left]="stickySelection() ? '0px' : null"></td>
+            }
+            @if (hasExpander()) {
+              <td class="ith-table-expander-cell"></td>
+            }
+            @for (column of visibleColumns(); track column.key) {
+              <td
+                class="ith-table-total-cell"
+                [ngClass]="stickyClassFor(column)"
+                [style]="columnStyle(column)">
+                @if (column.aggregate) {
+                  <span class="ith-table-total-label">{{ aggregateLabel(column) }}</span>
+                  <span class="ith-table-total-value">{{ aggregateText(column) }}</span>
+                }
+              </td>
+            }
+            @if (hasActionsColumn()) {
+              <td
+                class="ith-table-total-cell ith-table-actions-cell"
+                [class.ith-table-sticky-end]="stickyActions()"
+                [style.right]="stickyActions() ? '0px' : null"></td>
+            }
+          </tr>
+        </tfoot>
+      }
     </table>
 
     @if (loading() && pagedRows().length > 0) {
@@ -400,6 +588,157 @@
       </div>
     }
   </div>
+
+  <!-- Columns popover (fixed, so the toolbar's scroll box cannot clip it) -->
+  @if (columnPickerOpen()) {
+    <div
+      class="ith-table-popover"
+      role="dialog"
+      aria-label="Visible columns"
+      [style.left.px]="columnsMenuPos()?.x ?? 0"
+      [style.top.px]="columnsMenuPos()?.y ?? 0"
+      (click)="$event.stopPropagation()">
+      <div class="ith-table-popover-header">Show columns</div>
+      <div class="ith-table-popover-list">
+        @for (column of orderedColumns(); track column.key) {
+          <label class="ith-table-columns-item">
+            <input
+              type="checkbox"
+              class="ith-table-checkbox"
+              [checked]="isColumnVisible(column)"
+              [disabled]="!isColumnVisible(column) && !canHide(column.key)"
+              (change)="setColumnVisible(column.key, $any($event.target).checked)" />
+            <span>{{ column.header ?? column.key }}</span>
+            @if (pinOf(column)) {
+              <span class="ith-table-pin-tag">{{ pinOf(column) }}</span>
+            }
+          </label>
+        }
+      </div>
+      <div class="ith-table-popover-footer">
+        <button type="button" class="ith-table-popover-action" (click)="resetColumns()">
+          Reset columns
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Export formats -->
+  @if (exportMenuPos(); as pos) {
+    <div
+      class="ith-table-popover ith-table-export-menu"
+      role="menu"
+      aria-label="Export format"
+      [style.left.px]="pos.x"
+      [style.top.px]="pos.y"
+      (click)="$event.stopPropagation()">
+      <button type="button" class="ith-table-menu-item" role="menuitem" (click)="exportAs('xlsx')">
+        <span class="ith-table-export-name">Excel</span>
+        <span class="ith-table-export-hint">.xlsx — Excel, Numbers, Sheets</span>
+      </button>
+      <button type="button" class="ith-table-menu-item" role="menuitem" (click)="exportAs('csv')">
+        <span class="ith-table-export-name">CSV</span>
+        <span class="ith-table-export-hint">.csv — plain text, any tool</span>
+      </button>
+    </div>
+  }
+
+  <!-- Named views -->
+  @if (viewsOpen()) {
+    <div
+      class="ith-table-popover"
+      role="dialog"
+      aria-label="Saved views"
+      [style.left.px]="viewsMenuPos()?.x ?? 0"
+      [style.top.px]="viewsMenuPos()?.y ?? 0"
+      (click)="$event.stopPropagation()">
+      <div class="ith-table-popover-header">Saved views</div>
+      <div class="ith-table-popover-list">
+        @for (name of savedViewNames(); track name) {
+          <div class="ith-table-view-item" [class.is-active]="activeView() === name">
+            <button type="button" class="ith-table-view-apply" (click)="applyView(name)">
+              {{ name }}
+            </button>
+            <button
+              type="button"
+              class="ith-table-view-delete"
+              [attr.aria-label]="'Delete view ' + name"
+              (click)="deleteView(name, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
+        } @empty {
+          <p class="ith-table-popover-empty">No saved views yet.</p>
+        }
+      </div>
+      <div class="ith-table-popover-footer ith-table-view-save">
+        <input
+          type="text"
+          class="ith-table-view-input"
+          placeholder="View name"
+          aria-label="New view name"
+          [value]="viewNameDraft()"
+          (input)="onViewNameInput($any($event.target).value)"
+          (keydown.enter)="saveView()" />
+        <button type="button" class="ith-table-popover-action" (click)="saveView()">Save</button>
+      </div>
+    </div>
+  }
+
+  <!-- Column header menu -->
+  @if (columnMenu(); as menu) {
+    <div
+      class="ith-table-popover ith-table-column-menu"
+      role="menu"
+      [style.left.px]="menu.x"
+      [style.top.px]="menu.y"
+      (click)="$event.stopPropagation()">
+      @if (columnMenuColumn(); as column) {
+        @if (isSortable(column)) {
+          <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuSort('asc')">
+            Sort ascending
+          </button>
+          <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuSort('desc')">
+            Sort descending
+          </button>
+          @if (sortDirection(column)) {
+            <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuClearSort()">
+              Clear sort
+            </button>
+          }
+          <div class="ith-table-menu-divider"></div>
+        }
+        @if (canPin(column)) {
+          @if (pinOf(column) !== 'start') {
+            <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuPin('start')">
+              Pin to left
+            </button>
+          }
+          @if (pinOf(column) !== 'end') {
+            <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuPin('end')">
+              Pin to right
+            </button>
+          }
+          @if (pinOf(column)) {
+            <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuPin(null)">
+              Unpin column
+            </button>
+          }
+          <div class="ith-table-menu-divider"></div>
+        }
+        <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuAutosize()">
+          Fit to content
+        </button>
+        @if (canHide(column.key)) {
+          <button type="button" class="ith-table-menu-item" role="menuitem" (click)="menuHide()">
+            Hide column
+          </button>
+        }
+      }
+    </div>
+  }
 
   <!-- Right-click menu (projected template, positioned at the pointer) -->
   @if (menuState(); as menu) {

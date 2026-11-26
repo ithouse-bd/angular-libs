@@ -23,7 +23,7 @@
   box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.22);
 }
 
-[data-theme='dark'] .demo-filter-input {
+:host-context([data-theme='dark']) .demo-filter-input {
   background: #1b1e30;
   border-color: #343a52;
   color: #e7e9f3;
@@ -69,23 +69,23 @@
   color: #15803d;
 }
 
-[data-theme='dark'] .demo-status {
+:host-context([data-theme='dark']) .demo-status {
   background: #2a2e42;
   color: #cbd5e1;
 }
 
-[data-theme='dark'] .demo-status-active {
+:host-context([data-theme='dark']) .demo-status-active {
   background: #14532d;
   color: #86efac;
 }
 
 @media (prefers-color-scheme: dark) {
-  [data-theme='auto'] .demo-status {
+  :host-context([data-theme='auto']) .demo-status {
     background: #2a2e42;
     color: #cbd5e1;
   }
 
-  [data-theme='auto'] .demo-status-active {
+  :host-context([data-theme='auto']) .demo-status-active {
     background: #14532d;
     color: #86efac;
   }
@@ -114,6 +114,44 @@
   color: #dc2626;
 }
 
-[data-theme='dark'] .demo-menu-item:hover {
+:host-context([data-theme='dark']) .demo-menu-item:hover {
   background: #22252d;
+}
+
+/* Row detail panel used by `#ithTableRowDetail` */
+.demo-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px 24px;
+}
+
+.demo-detail > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.demo-detail span {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.demo-detail strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Row detail panel in dark mode (projected into the table, so :host-context is needed). */
+:host-context([data-theme='dark']) .demo-detail span,
+:host-context(.dark) .demo-detail span {
+  color: #9aa0b5;
+}
+
+:host-context([data-theme='dark']) .demo-detail strong,
+:host-context(.dark) .demo-detail strong {
+  color: #e7e9f3;
 }

@@ -32,10 +32,20 @@ API-driven (server) data.
 - **Copy** — hover a cell (or press Ctrl/Cmd+C on a focused cell) or copy a whole row
 - **Context menu** — right-click / `Shift+F10` emits `rowContextMenu` and renders your
   `ithTableRowMenu` template in a floating panel at the pointer
-- **Column visibility + preset** — toolbar picker; hidden columns and density are saved in
-  `localStorage` through `storageKey`
-- **Sticky columns** — stick the checkbox and actions columns (or any column with `sticky`)
+- **Layout control** — Columns popover, per-column header menu (sort, pin, fit, hide),
+  drag-to-reorder headers and drag-to-resize edges; hidden columns, order, widths, pinning and
+  density are saved in `localStorage` through `storageKey`, plus named views
+- **Filter chips** — the active search term and every column filter shown as removable chips
+- **Selection bar** — bulk actions appear as soon as rows are selected
+- **CSV & Excel export** — one toolbar menu with a real `.xlsx` (built without dependencies)
+  and `.csv`, plus `toCsv()` / `toExcel()` / `downloadCsv()` / `downloadExcel()`
+- **Row detail** — an `#ithTableRowDetail` template expands underneath the row
+- **Footer totals** — `sum`, `avg`, `min`, `max` and `count` per column
+- **Keyboard grid** — one tab stop, arrow keys / Home / End / PageUp / PageDown, Space selects
+- **Sticky columns** — stick the checkbox and actions columns, or pin any column at runtime
 - **Cell tooltips** — full value on hover for truncated cells, opt out per column
+- **Stable height** — `minRows` keeps the empty body space when a page returns fewer rows,
+  so a one-row result never collapses into a single line
 - **Skeleton loading** — placeholder rows instead of a blank table, plus a toolbar
   comfortable/compact density toggle
 - **Presentation** — striped, bordered, dense, hover, sticky header, fixed max height, loading overlay
@@ -185,6 +195,52 @@ Other slots: `ithTableHeader="key"`, `ithTableFilter="key"`, `ithTableRowActions
 
 ![Selection and row actions](https://raw.githubusercontent.com/ithouse-bd/angular-libs/main/libs/ngx-table/docs/images/table-selection.svg)
 
+## Layout control, export & row detail
+
+```html
+<ith-table
+  [data]="students"
+  [columns]="columns"
+  [showColumnPicker]="true"
+  [resizable]="true"
+  [reorderable]="true"
+  [showViews]="true"
+  [showExport]="true"
+  [showFilters]="true"
+  storageKey="students-table"
+  [selectionActions]="bulkActions"
+  (selectionAction)="bulk($event)"
+  (columnStateChange)="saveLayout($event)">
+
+  <ng-template ithTableRowDetail let-row>
+    <p>{{ row.email }} — {{ row.guardianMobile }}</p>
+  </ng-template>
+</ith-table>
+```
+
+- **Header menu** — hovering a header shows a `⋮` button with sort asc/desc, pin left/right,
+  unpin, fit to content and hide. `showColumnMenu` (default `true`) turns it off.
+- **Resize & reorder** — `resizable` drags the column edge (minimum 56 px), `reorderable`
+  drags a header onto another. Both changes are stored in the preset.
+- **Named views** — `showViews` adds a Views menu: save the current layout under a name and
+  apply it later. The layout itself is still restored automatically through `storageKey`.
+- **Filter chips** — with an active search or filter the toolbar shows removable chips plus
+  "Clear all". `showFilterChips` (default `true`) hides them.
+- **Selection bar** — pass `selectionActions` and the bar appears whenever rows are selected;
+  `(selectionAction)` emits `{ action, rows }`.
+- **Row detail** — with an `#ithTableRowDetail` template each row gets a chevron
+  (`rowDetailTrigger="button"`), or expands on row click (`"row"`).
+- **CSV & Excel export** — `showExport` renders the button with a two-item menu:
+  `.xlsx` (a real workbook with a bold frozen header row, autofilter and column widths,
+  generated in the browser without any dependency) and `.csv` (UTF-8 with BOM).
+  `toCsv()` / `toExcel()` return the data and `downloadCsv()` / `downloadExcel()` save it;
+  selected rows win over the whole filtered set.
+- **Footer totals** — add `aggregate: 'sum'` (or `avg`/`min`/`max`/`count`) to a column, or
+  `aggregate: { type: 'avg', label: 'Average', format: (n) => n.toFixed(1) }`.
+- **Keyboard** — the grid has a single tab stop: arrows move, `Home`/`End` jump within a row,
+  `Ctrl+Home`/`Ctrl+End` to the corners, `PageUp`/`PageDown` move a page, `Space` selects the
+  row and `Ctrl/Cmd+C` copies the focused cell.
+
 ## Row actions
 
 ```typescript
@@ -262,8 +318,8 @@ Light/dark/auto follows the same convention as `@ithouse-bd/ngx-dropdown`: set
 `data-theme="light" | "dark" | "auto"` on `<html>` or `<body>`. All variables are listed
 in the [theming guide](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-table/THEMING.md).
 
-The component ships ~15 kB of scoped CSS (~3 kB gzipped). If your `angular.json` keeps the
-Angular default `anyComponentStyle` budget (8 kB error), raise it to `16kb`/`20kb`.
+The component ships ~36 kB of scoped CSS (~6 kB gzipped). If your `angular.json` keeps the
+Angular default `anyComponentStyle` budget (8 kB error), raise it to `32kb`/`40kb`.
 
 ## API at a glance
 
@@ -286,9 +342,19 @@ Angular default `anyComponentStyle` budget (8 kB error), raise it to `16kb`/`20k
 | `loading` | `boolean` | `false` | Loading overlay |
 | `striped` / `bordered` / `dense` / `hoverable` | `boolean` | `false` / `false` / `false` / `true` | Presentation modifiers |
 | `stickyHeader` / `maxHeight` | `boolean` / `string` | `false` / `''` | Scroll container behaviour |
+| `minRows` | `number` | `4` | Empty body space kept when there are fewer rows |
+| `showColumnMenu` | `boolean` | `true` | Header `⋮` menu (sort, pin, fit, hide) |
+| `resizable` / `reorderable` | `boolean` | `false` | Drag to resize / reorder columns |
+| `showViews` | `boolean` | `false` | Named-layout menu |
+| `showExport` / `exportFileName` | `boolean` / `string` | `false` / `'table'` | CSV export button |
+| `showFilterChips` | `boolean` | `true` | Removable chips for active filters |
+| `selectionActions` | `TableSelectionAction<T>[]` | `[]` | Bulk actions in the selection bar |
+| `rowDetailTrigger` | `'button' \| 'row' \| 'none'` | `'button'` | How `#ithTableRowDetail` expands |
+| `keyboardNavigation` | `boolean` | `true` | Single tab stop + arrow keys |
 
 Outputs: `sortChange`, `searchChange`, `filterChange`, `pageChange`, `pageSizeChange`,
-`selectedChange`, `actionClick`, `rowClick`.
+`selectedChange`, `actionClick`, `rowClick`, `cellCopy`, `rowContextMenu`, `columnsChange`,
+`densityChange`, `columnStateChange`, `selectionAction`, `csvExport`, `exportFile`.
 
 Full reference, every template context and recipes:
 **[DOCUMENTATION.md](https://github.com/ithouse-bd/angular-libs/blob/main/libs/ngx-table/DOCUMENTATION.md)**.

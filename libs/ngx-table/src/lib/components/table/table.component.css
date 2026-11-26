@@ -26,6 +26,20 @@
   --_cell-padding: var(--ith-table-cell-padding, 12px 16px);
   --_font-size: var(--ith-table-font-size, 14px);
   --_header-font-size: var(--ith-table-header-font-size, 13px);
+
+  /* Approximate row / header heights, used to keep a stable body height. */
+  --_row-height: var(--ith-table-row-height, 46px);
+  --_head-height: var(--ith-table-head-height, 45px);
+  --_filter-height: 47px;
+
+  /* Text drawn on top of an accent fill, elevation surfaces and the scrollbar. */
+  --_on-accent: #ffffff;
+  --_toolbar-tint: color-mix(in srgb, var(--_brand) 3%, var(--_bg));
+  --_popover-bg: var(--_bg);
+  --_scroll-thumb: color-mix(in srgb, var(--_muted) 38%, transparent);
+  --_danger: #dc2626;
+  --_elevation: 0 18px 40px -18px rgba(17, 12, 46, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--_border) 60%, transparent);
 }
 
 :host-context([data-theme='dark']),
@@ -34,21 +48,28 @@
   --_bg: var(--ith-table-bg, #161826);
   --_text: var(--ith-table-text, #e7e9f3);
   --_muted: var(--ith-table-muted, #9aa0b5);
-  --_border: var(--ith-table-border, #2a2e42);
-  --_header-bg: var(--ith-table-header-bg, color-mix(in srgb, var(--_brand) 42%, #0b0d16));
+  --_border: var(--ith-table-border, #2f3348);
+  --_header-bg: var(--ith-table-header-bg, color-mix(in srgb, var(--_brand) 34%, #0b0d16));
   --_header-text: var(--ith-table-header-text, #f3eeff);
-  --_hover: var(--ith-table-hover, color-mix(in srgb, var(--_brand) 10%, #161826));
+  --_hover: var(--ith-table-hover, color-mix(in srgb, var(--_brand) 15%, #161826));
   --_selected-bg: var(--ith-table-selected-bg, color-mix(in srgb, var(--_brand) 20%, #161826));
-  --_striped-bg: var(--ith-table-striped-bg, color-mix(in srgb, var(--_brand) 4%, #161826));
+  --_striped-bg: var(--ith-table-striped-bg, color-mix(in srgb, var(--_brand) 6%, #161826));
   --_accent: var(--ith-table-accent, color-mix(in srgb, var(--_brand) 55%, #ffffff));
   --_accent-soft: var(--ith-table-accent-soft, color-mix(in srgb, var(--_brand) 26%, #161826));
-  --_input-bg: var(--ith-table-input-bg, #1b1e30);
+  --_input-bg: var(--ith-table-input-bg, #202436);
   --_input-border: var(--ith-table-input-border, #343a52);
   --_footer-bg: var(--ith-table-footer-bg, color-mix(in srgb, var(--_brand) 4%, #12141f));
-  --_filter-bg: var(--ith-table-filter-bg, color-mix(in srgb, var(--_brand) 6%, #161826));
+  --_filter-bg: var(--ith-table-filter-bg, color-mix(in srgb, var(--_brand) 9%, #161826));
   --_overlay: var(--ith-table-overlay, rgba(17, 19, 30, 0.72));
   --_shadow: var(--ith-table-shadow, 0 18px 40px -28px rgba(0, 0, 0, 0.85));
   --_focus: var(--ith-table-focus, color-mix(in srgb, var(--_brand) 38%, transparent));
+  --_on-accent: #15121f;
+  --_toolbar-tint: color-mix(in srgb, var(--_brand) 12%, var(--_bg));
+  --_popover-bg: #1d2133;
+  --_scroll-thumb: color-mix(in srgb, #ffffff 22%, transparent);
+  --_danger: #f87171;
+  --_elevation: 0 22px 48px -20px rgba(0, 0, 0, 0.8),
+    0 0 0 1px color-mix(in srgb, #ffffff 8%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -57,21 +78,28 @@
     --_bg: var(--ith-table-bg, #161826);
     --_text: var(--ith-table-text, #e7e9f3);
     --_muted: var(--ith-table-muted, #9aa0b5);
-    --_border: var(--ith-table-border, #2a2e42);
-    --_header-bg: var(--ith-table-header-bg, color-mix(in srgb, var(--_brand) 42%, #0b0d16));
+    --_border: var(--ith-table-border, #2f3348);
+    --_header-bg: var(--ith-table-header-bg, color-mix(in srgb, var(--_brand) 34%, #0b0d16));
     --_header-text: var(--ith-table-header-text, #f3eeff);
-    --_hover: var(--ith-table-hover, color-mix(in srgb, var(--_brand) 10%, #161826));
+    --_hover: var(--ith-table-hover, color-mix(in srgb, var(--_brand) 15%, #161826));
     --_selected-bg: var(--ith-table-selected-bg, color-mix(in srgb, var(--_brand) 20%, #161826));
-    --_striped-bg: var(--ith-table-striped-bg, color-mix(in srgb, var(--_brand) 4%, #161826));
+    --_striped-bg: var(--ith-table-striped-bg, color-mix(in srgb, var(--_brand) 6%, #161826));
     --_accent: var(--ith-table-accent, color-mix(in srgb, var(--_brand) 55%, #ffffff));
     --_accent-soft: var(--ith-table-accent-soft, color-mix(in srgb, var(--_brand) 26%, #161826));
-    --_input-bg: var(--ith-table-input-bg, #1b1e30);
+    --_input-bg: var(--ith-table-input-bg, #202436);
     --_input-border: var(--ith-table-input-border, #343a52);
     --_footer-bg: var(--ith-table-footer-bg, color-mix(in srgb, var(--_brand) 4%, #12141f));
-    --_filter-bg: var(--ith-table-filter-bg, color-mix(in srgb, var(--_brand) 6%, #161826));
+    --_filter-bg: var(--ith-table-filter-bg, color-mix(in srgb, var(--_brand) 9%, #161826));
     --_overlay: var(--ith-table-overlay, rgba(17, 19, 30, 0.72));
     --_shadow: var(--ith-table-shadow, 0 18px 40px -28px rgba(0, 0, 0, 0.85));
     --_focus: var(--ith-table-focus, color-mix(in srgb, var(--_brand) 38%, transparent));
+  --_on-accent: #15121f;
+  --_toolbar-tint: color-mix(in srgb, var(--_brand) 12%, var(--_bg));
+  --_popover-bg: #1d2133;
+  --_scroll-thumb: color-mix(in srgb, #ffffff 22%, transparent);
+  --_danger: #f87171;
+  --_elevation: 0 22px 48px -20px rgba(0, 0, 0, 0.8),
+    0 0 0 1px color-mix(in srgb, #ffffff 8%, transparent);
   }
 }
 
@@ -101,7 +129,7 @@
 .ith-table-toolbar {
   padding: 14px 16px;
   border-bottom: 1px solid var(--_border);
-  background: color-mix(in srgb, var(--_brand) 3%, var(--_bg));
+  background: var(--_toolbar-tint);
 }
 
 .ith-table-toolbar-inner {
@@ -156,7 +184,7 @@
 
 .ith-table-badge-accent {
   background: var(--_accent);
-  color: #ffffff;
+  color: var(--_on-accent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--_accent) 30%, transparent);
 }
 
@@ -250,6 +278,41 @@
 .ith-table-scroll {
   position: relative;
   overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--_scroll-thumb) transparent;
+}
+
+.ith-table-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.ith-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ith-table-scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-color: var(--_scroll-thumb);
+  background-clip: content-box;
+}
+
+.ith-table-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--_scroll-thumb) 75%, var(--_text));
+}
+
+/* A grid with fewer rows than `minRows` keeps the empty space below the last row
+   instead of collapsing to the height of one line. Rows themselves never stretch.
+   Skipped when `maxHeight` already bounds the scroll area. */
+.ith-table-scroll:not(.ith-table-scroll-bounded) {
+  min-height: calc(var(--_head-height) + var(--_row-height) * var(--_min-rows, 4));
+}
+
+.ith-table-scroll:not(.ith-table-scroll-bounded).ith-table-scroll-filtered {
+  min-height: calc(
+    var(--_head-height) + var(--_filter-height) + var(--_row-height) * var(--_min-rows, 4)
+  );
 }
 
 .ith-table-grid {
@@ -438,8 +501,8 @@
 
 /* `TableRowAction.class` can add modifiers such as a danger style. */
 .ith-table-action.is-danger {
-  color: #dc2626;
-  border-color: #fecaca;
+  color: var(--_danger);
+  border-color: color-mix(in srgb, var(--_danger) 35%, transparent);
 }
 
 /* ------------------------------------------------------------------ */
@@ -631,12 +694,12 @@
 .ith-table-page-number.is-active {
   background: var(--_accent);
   border-color: var(--_accent);
-  color: #ffffff;
+  color: var(--_on-accent);
 }
 
 .ith-table-page-number.is-active:hover {
   background: var(--_accent);
-  color: #ffffff;
+  color: var(--_on-accent);
 }
 
 .ith-table-page-state {
@@ -676,9 +739,16 @@
 /* ------------------------------------------------------------------ */
 
 .ith-table-dense {
+  /* Both layers: the public token is inherited downward, while the private one must be
+     re-declared here because `:host` already resolved it for the light/default theme. */
   --ith-table-cell-padding: 8px 12px;
   --ith-table-font-size: 13px;
   --ith-table-header-font-size: 12px;
+  --_cell-padding: 8px 12px;
+  --_font-size: 13px;
+  --_header-font-size: 12px;
+  --_row-height: 39px;
+  --_head-height: 38px;
 }
 
 .ith-table-dense .ith-table-head-row th {
@@ -813,28 +883,79 @@
   box-shadow: 0 0 0 3px var(--_focus);
 }
 
-.ith-table-columns {
+.ith-table-menu-anchor {
   position: relative;
+  display: inline-flex;
 }
 
-.ith-table-columns-popover {
-  position: absolute;
-  z-index: 45;
-  top: calc(100% + 8px);
-  inset-inline-end: 0;
-  min-width: 220px;
-  max-height: 340px;
+/* Floating popover (columns / views / header menu). `fixed` so the toolbar's
+   horizontal scroll box cannot clip it. */
+.ith-table-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 36px;
+  padding: 3px;
+  border: 1px solid var(--_input-border);
+  border-radius: 10px;
+  background: var(--_input-bg);
+}
+
+.ith-table-segmented-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--_muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.ith-table-segmented-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ith-table-segmented-btn:hover {
+  color: var(--_accent);
+}
+
+.ith-table-segmented-btn.is-active {
+  background: var(--_accent-soft);
+  color: var(--_accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--_accent) 22%, transparent);
+}
+
+.ith-table-segmented-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--_focus);
+}
+
+.ith-table-popover {
+  position: fixed;
+  z-index: 900;
+  width: 250px;
+  max-height: 380px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--_border);
   border-radius: 12px;
-  background: var(--_bg);
+  background: var(--_popover-bg);
   color: var(--_text);
-  box-shadow: 0 18px 40px -18px rgba(17, 12, 46, 0.35), 0 0 0 1px color-mix(in srgb, var(--_border) 60%, transparent);
+  box-shadow: var(--_elevation);
+  font-size: 13px;
 }
 
-.ith-table-columns-header {
+.ith-table-popover-header {
   padding: 10px 12px 8px;
   font-size: 11.5px;
   font-weight: 700;
@@ -843,10 +964,42 @@
   color: var(--_muted);
 }
 
-.ith-table-columns-list {
+.ith-table-popover-list {
   padding: 0 6px 6px;
   overflow-y: auto;
-  max-height: 240px;
+  max-height: 280px;
+}
+
+.ith-table-popover-footer {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-top: 1px solid var(--_border);
+  background: color-mix(in srgb, var(--_brand) 2%, var(--_bg));
+}
+
+.ith-table-popover-action {
+  flex: 1 1 auto;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--_accent);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ith-table-popover-action:hover {
+  background: var(--_accent-soft);
+}
+
+.ith-table-popover-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--_muted);
+  font-size: 12.5px;
 }
 
 .ith-table-columns-item {
@@ -864,33 +1017,148 @@
   background: var(--_hover);
 }
 
-.ith-table-columns-footer {
-  border-top: 1px solid var(--_border);
-  padding: 4px;
-  background: color-mix(in srgb, var(--_brand) 2%, var(--_bg));
+.ith-table-columns-item input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.ith-table-columns-reset {
-  width: 100%;
+.ith-table-pin-tag {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--_accent-soft);
+  color: var(--_accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Saved views */
+
+.ith-table-view-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 4px;
+  border-radius: 8px;
+}
+
+.ith-table-view-item:hover {
+  background: var(--_hover);
+}
+
+.ith-table-view-item.is-active .ith-table-view-apply {
+  color: var(--_accent);
+  font-weight: 650;
+}
+
+.ith-table-view-apply {
+  flex: 1 1 auto;
   padding: 7px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--_text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ith-table-view-delete {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--_muted);
+  cursor: pointer;
+}
+
+.ith-table-view-delete svg {
+  width: 11px;
+  height: 11px;
+}
+
+.ith-table-view-delete:hover {
+  background: var(--_accent-soft);
+  color: var(--_accent);
+}
+
+.ith-table-view-save {
+  align-items: center;
+}
+
+.ith-table-view-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--_input-border);
+  border-radius: 8px;
+  background: var(--_input-bg);
+  color: var(--_text);
+  font: inherit;
+  font-size: 12.5px;
+}
+
+.ith-table-view-input:focus {
+  outline: none;
+  border-color: var(--_accent);
+  box-shadow: 0 0 0 3px var(--_focus);
+}
+
+/* Header menu */
+
+.ith-table-column-menu {
+  width: 220px;
+  padding: 6px;
+}
+
+.ith-table-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--_accent);
+  color: var(--_text);
   font: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 13px;
+  text-align: left;
   cursor: pointer;
-  transition: background-color 0.12s ease;
 }
 
-.ith-table-columns-reset:hover {
+.ith-table-menu-item:hover {
   background: var(--_accent-soft);
+  color: var(--_accent);
+}
+
+.ith-table-menu-divider {
+  height: 1px;
+  margin: 5px 6px;
+  background: var(--_border);
 }
 
 /* Compact density (toolbar toggle) — the `dense` input keeps working too. */
 .ith-table.ith-table-compact {
   --ith-table-cell-padding: 7px 12px;
+  --_cell-padding: var(--ith-table-compact-padding, 7px 12px);
+  --_font-size: var(--ith-table-compact-font-size, 13px);
+  --_header-font-size: 12.5px;
+  --_row-height: 39px;
+  --_head-height: 39px;
+}
+
+.ith-table.ith-table-compact .ith-table-head-row th {
+  padding: 10px 12px;
+}
+
+.ith-table.ith-table-compact .ith-table-filter-row th {
+  padding: 6px 10px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -943,7 +1211,9 @@ thead .ith-table-sticky-end {
 /* Copy to clipboard                                                  */
 /* ------------------------------------------------------------------ */
 
-.ith-table-td {
+/* Positioned so the copy button can be absolute — but never on a sticky cell:
+   this rule would otherwise override `position: sticky` and unpin the body column. */
+.ith-table-td:not(.ith-table-sticky-start):not(.ith-table-sticky-end) {
   position: relative;
 }
 
@@ -1056,9 +1326,9 @@ thead .ith-table-sticky-end {
   padding: 6px;
   border: 1px solid var(--_border);
   border-radius: 10px;
-  background: var(--_bg);
+  background: var(--_popover-bg);
   color: var(--_text);
-  box-shadow: 0 16px 36px -16px rgba(17, 12, 46, 0.45);
+  box-shadow: var(--_elevation);
   font-size: 13px;
 }
 
@@ -1073,3 +1343,422 @@ thead .ith-table-sticky-end {
   }
 }
 
+
+
+/* ------------------------------------------------------------------ */
+/* Header menu, resize, reorder                                       */
+/* ------------------------------------------------------------------ */
+
+.ith-table-th-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ith-table-th-inner > *:first-child {
+  min-width: 0;
+}
+
+.ith-table-th:not(.ith-table-sticky-start):not(.ith-table-sticky-end) {
+  position: relative;
+}
+
+.ith-table-th-menu {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background-color 0.12s ease;
+}
+
+.ith-table-th-menu svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ith-table-th:hover .ith-table-th-menu,
+.ith-table-th-menu[aria-expanded='true'],
+.ith-table-th-menu:focus-visible {
+  opacity: 0.85;
+}
+
+.ith-table-th-menu:hover {
+  background: color-mix(in srgb, currentColor 20%, transparent);
+  opacity: 1;
+}
+
+.ith-table-th-menu:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+.ith-table-resizer {
+  position: absolute;
+  top: 0;
+  inset-inline-end: -4px;
+  bottom: 0;
+  width: 9px;
+  z-index: 4;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.ith-table-resizer::after {
+  content: '';
+  position: absolute;
+  top: 22%;
+  bottom: 22%;
+  inset-inline-start: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color 0.12s ease;
+}
+
+.ith-table-th:hover .ith-table-resizer::after {
+  background: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+.ith-table-th-dragging {
+  opacity: 0.5;
+}
+
+.ith-table-drop-target {
+  box-shadow: inset 3px 0 0 var(--_accent);
+}
+
+.ith-table-pin-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+/* Sticky header depth once the body is scrolled */
+
+.ith-table-sticky .ith-table-scroll.is-scrolled .ith-table-head-row th {
+  box-shadow: 0 1px 0 var(--_border), 0 10px 16px -14px rgba(12, 10, 30, 0.55);
+}
+
+/* ------------------------------------------------------------------ */
+/* Filter chips                                                       */
+/* ------------------------------------------------------------------ */
+
+.ith-table-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.ith-table-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  padding: 3px 4px 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--_accent) 24%, transparent);
+  border-radius: 999px;
+  background: var(--_accent-soft);
+  color: var(--_accent);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.ith-table-chip-label {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.ith-table-chip-value {
+  max-width: 150px;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ith-table-chip-remove {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--_accent) 16%, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.ith-table-chip-remove svg {
+  width: 9px;
+  height: 9px;
+}
+
+.ith-table-chip-remove:hover {
+  background: var(--_accent);
+  color: var(--_on-accent);
+}
+
+.ith-table-chips-clear {
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--_muted);
+  font: inherit;
+  font-size: 11.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.ith-table-chips-clear:hover {
+  color: var(--_accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Selection action bar                                               */
+/* ------------------------------------------------------------------ */
+
+.ith-table-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--_accent) 28%, var(--_border));
+  background: var(--_accent-soft);
+  color: var(--_accent);
+  font-size: 12.5px;
+}
+
+.ith-table-selection-count strong {
+  font-weight: 700;
+}
+
+.ith-table-selection-spacer {
+  flex: 1 1 auto;
+}
+
+.ith-table-selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ith-table-selection-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--_accent) 35%, transparent);
+  border-radius: 8px;
+  background: var(--_bg);
+  color: var(--_accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.ith-table-selection-btn:hover {
+  background: var(--_accent);
+  color: var(--_on-accent);
+}
+
+.ith-table-selection-btn.is-danger {
+  border-color: color-mix(in srgb, var(--_danger) 40%, transparent);
+  color: var(--_danger);
+}
+
+.ith-table-selection-btn.is-danger:hover {
+  background: var(--_danger);
+  color: #ffffff;
+}
+
+.ith-table-selection-clear {
+  border: 0;
+  background: transparent;
+  color: var(--_muted);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.ith-table-selection-clear:hover {
+  color: var(--_accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Row detail                                                         */
+/* ------------------------------------------------------------------ */
+
+.ith-table-expander-cell {
+  width: 38px;
+  padding: 0 0 0 10px;
+  text-align: center;
+}
+
+th.ith-table-expander-cell {
+  background: var(--_header-bg);
+}
+
+.ith-table-expander {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--_muted);
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.12s ease, background-color 0.12s ease;
+}
+
+.ith-table-expander svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ith-table-expander:hover {
+  background: var(--_accent-soft);
+  color: var(--_accent);
+}
+
+.ith-table-expander.is-open {
+  transform: rotate(90deg);
+  color: var(--_accent);
+}
+
+.ith-table-detail-row > td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--_border);
+  background: var(--_striped-bg);
+  white-space: normal;
+}
+
+/* ------------------------------------------------------------------ */
+/* Footer totals                                                      */
+/* ------------------------------------------------------------------ */
+
+.ith-table-total-cell {
+  padding: var(--_cell-padding);
+  border-top: 1px solid var(--_border);
+  background: var(--_filter-bg);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ith-table-total-row .ith-table-select-cell,
+.ith-table-total-row .ith-table-expander-cell {
+  border-top: 1px solid var(--_border);
+  background: var(--_filter-bg);
+}
+
+.ith-table-total-label {
+  margin-inline-end: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--_muted);
+}
+
+.ith-table-total-value {
+  font-weight: 650;
+  color: var(--_text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ith-table-expander,
+  .ith-table-th-menu,
+  .ith-table-selection-btn {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Export menu                                                        */
+/* ------------------------------------------------------------------ */
+
+.ith-table-export-menu {
+  width: 236px;
+  padding: 6px;
+}
+
+.ith-table-export-name {
+  display: block;
+  font-weight: 650;
+}
+
+.ith-table-export-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--_muted);
+}
+
+.ith-table-menu-item:hover .ith-table-export-hint {
+  color: inherit;
+  opacity: 0.75;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dark mode polish                                                   */
+/* ------------------------------------------------------------------ */
+
+/* A hairline ring, because a drop shadow alone disappears into a dark page. */
+:host-context([data-theme='dark']) .ith-table,
+:host-context(.dark) .ith-table {
+  box-shadow: var(--_shadow), inset 0 0 0 1px color-mix(in srgb, #ffffff 6%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :host-context([data-theme='auto']) .ith-table {
+    box-shadow: var(--_shadow), inset 0 0 0 1px color-mix(in srgb, #ffffff 6%, transparent);
+  }
+}
+
+/* Row hairlines read better a little lighter than the card border in dark. */
+:host-context([data-theme='dark']) .ith-table-td,
+:host-context(.dark) .ith-table-td,
+:host-context([data-theme='dark']) .ith-table-actions-cell,
+:host-context(.dark) .ith-table-actions-cell {
+  border-color: color-mix(in srgb, var(--_border) 78%, #ffffff);
+}
+
+/* Selected rows get a clearer accent edge on dark surfaces. */
+:host-context([data-theme='dark']) .ith-table-row.ith-table-row-selected td:first-child,
+:host-context(.dark) .ith-table-row.ith-table-row-selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--_accent);
+}
+
+/* Compact headers stay readable on the darker brand-tinted header. */
+:host-context([data-theme='dark']) .ith-table-sort-icons,
+:host-context(.dark) .ith-table-sort-icons {
+  opacity: 0.65;
+}

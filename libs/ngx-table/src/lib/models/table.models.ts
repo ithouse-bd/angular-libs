@@ -21,6 +21,12 @@ export type TableFilterType = 'text' | 'number' | 'date' | 'select';
 /** Row height mode toggled from the toolbar. */
 export type TableDensity = 'comfortable' | 'compact';
 
+/** Runtime pinning of a column to the start or end edge. */
+export type TablePin = 'start' | 'end';
+
+/** Built-in footer aggregation for a column. */
+export type TableAggregateType = 'sum' | 'avg' | 'min' | 'max' | 'count';
+
 /** Option of a `select` filter. */
 export interface TableFilterOption {
   label: string;
@@ -88,7 +94,59 @@ export interface TableColumn<T = any> {
    * Keep the column at the start/end edge while the table scrolls horizontally.
    * Sticky columns should declare a `width` so the next sticky column can be offset.
    */
-  sticky?: 'start' | 'end';
+  sticky?: TablePin;
+  /** Allow pinning / unpinning this column from the header menu. Defaults to `true`. */
+  pinnable?: boolean;
+  /** Allow hiding this column from the header menu. Defaults to `true`. */
+  hideable?: boolean;
+  /** Footer aggregation shown when the column declares `aggregate`. */
+  aggregate?: TableAggregateType | TableAggregate<T>;
+}
+
+/** Column aggregate: a bare type (`'sum'`) or a type plus custom label/format. */
+export interface TableAggregate<T = any> {
+  type: TableAggregateType;
+  /** Text drawn before the value, e.g. `'Total'`. Defaults to the type name. */
+  label?: string;
+  /** Custom number formatter; overrides the default locale formatting. */
+  format?: (value: number, column: TableColumn<T>) => string;
+}
+
+/** One bulk action rendered in the selection bar. */
+export interface TableSelectionAction<T = any> {
+  /** Identifies the action in `(selectionAction)` events. */
+  id: string;
+  label: string;
+  icon?: string;
+  class?: string;
+  title?: string;
+}
+
+/** Emitted when a selection bar action is clicked. */
+export interface TableSelectionActionEvent<T = any> {
+  action: TableSelectionAction<T>;
+  rows: T[];
+}
+
+/** Emitted when the toolbar export is used. */
+export interface TableExportEvent<T = any> {
+  format: 'csv' | 'xlsx';
+  fileName: string;
+  blob: Blob;
+  /** Rows that were written (the selection when there is one). */
+  rows: T[];
+}
+
+/** Everything the user can change at runtime and that `storageKey` remembers. */
+export interface TablePresetState {
+  hidden: string[];
+  density: TableDensity;
+  /** Column keys in display order (hidden columns keep their slot). */
+  order: string[];
+  /** Runtime widths in px, keyed by column key. */
+  widths: Record<string, number>;
+  /** Runtime pinning, keyed by column key. */
+  pinned: Record<string, TablePin>;
 }
 
 /** Declarative row action button rendered in the actions column. */
@@ -175,6 +233,15 @@ export interface TableRowMenuContext<T = any> {
   $implicit: T;
   row: T;
   index: number;
+}
+
+/** Context of the projected `#ithTableRowDetail` template. */
+export interface TableRowDetailContext<T = any> {
+  $implicit: T;
+  row: T;
+  index: number;
+  /** Closes the detail panel for this row. */
+  close: () => void;
 }
 
 export interface TableToolbarContext<T = any> {

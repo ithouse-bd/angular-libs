@@ -14,6 +14,13 @@ Complete reference for `<ith-table>`: every input, output, template slot and rec
 - [Selection](#selection)
 - [Row actions](#row-actions)
 - [Custom templates](#custom-templates)
+- [Copy, context menu & presets](#copy-context-menu--presets)
+- [Header menu, resize and reorder](#header-menu-resize-and-reorder)
+- [Named views](#named-views)
+- [Row detail](#row-detail)
+- [CSV and Excel export](#csv-and-excel-export)
+- [Footer totals](#footer-totals)
+- [Keyboard grid](#keyboard-grid)
 - [Loading and empty states](#loading-and-empty-states)
 - [Server-side mode](#server-side-mode)
 - [Programmatic API](#programmatic-api)
@@ -465,9 +472,142 @@ Replaces the default summary **only**; pagination controls stay. Context adds `p
 
 - The "Columns" popover toggles visibility without touching the column config; at least one
   column always stays visible.
-- With `storageKey`, the hidden-column list and the comfortable/compact density are restored
-  from `localStorage` on the next visit. Call `resetColumns()` to clear the selection.
+- With `storageKey`, the whole layout is restored from `localStorage` on the next visit:
+  hidden columns, density, order, widths and pinning (the stored JSON is versioned, and an old
+  1.0.0 `{ hidden, density }` value is still read). Call `resetColumns()` to clear it.
 - `dense` still forces compact rows; the toggle only switches the runtime density.
+
+### Header menu, resize and reorder
+
+```html
+<ith-table [data]="rows" [columns]="columns"
+           [resizable]="true" [reorderable]="true"
+           [showColumnMenu]="true"
+           (columnStateChange)="save($event)"></ith-table>
+```
+
+- Every header shows a `⋮` button (on hover, or always on focus) opening a menu with sort
+  ascending/descending, clear sort, pin to left/right, unpin, fit to content and hide column.
+  Each item respects the column flags: `sortable`, `pinnable`, `hideable`.
+- All popovers are rendered with `position: fixed` and positioned from the trigger's
+  rectangle, so the toolbar's horizontal scroll box and the table's `overflow` can never clip
+  them.
+- `resizable` adds a pointer drag handle on the right edge of each header (minimum 56 px);
+  `autosizeColumn(key)` or "Fit to content" sizes a column from its widest rendered value.
+- `reorderable` drags a header onto another header; hidden columns keep their slot.
+- `columnStateChange` emits `TablePresetState` — `{ hidden, density, order, widths, pinned }` —
+  whenever the user changes the layout.
+- Per-column opt-outs: `sticky: 'start' | 'end'` (initial pin), `pinnable: false`,
+  `hideable: false`.
+
+### Named views
+
+```html
+<ith-table [data]="rows" [columns]="columns" [showViews]="true"
+           storageKey="orders-table"></ith-table>
+```
+
+The Views menu lists saved layouts ("Compact view", "Finance view" …), lets the user save the
+current layout under a name, apply one with a click and delete one with `×`. Views live in the
+same `storageKey` entry, and the active view stays highlighted.
+
+### Filter chips
+
+When `search()` or any column filter is active, `.ith-table-chips` shows one removable chip per
+filter plus "Clear all". `showFilterChips` (default `true`) disables the row; `removeChip()` and
+`clearQuery()` are also available programmatically.
+
+### Selection bar
+
+```typescript
+bulk: TableSelectionAction<Row>[] = [
+  { id: 'export', label: 'Export selected' },
+  { id: 'delete', label: 'Delete', class: 'is-danger' },
+];
+```
+
+```html
+<ith-table [data]="rows" [columns]="columns" selectionMode="multi"
+           [selectionActions]="bulk" (selectionAction)="run($event)"></ith-table>
+```
+
+As soon as one row is selected a bar appears above the table with the count, your actions and
+"Clear selection". `(selectionAction)` emits `{ action, rows }`.
+
+### Row detail
+
+```html
+<ith-table [data]="rows" [columns]="columns" rowDetailTrigger="button">
+  <ng-template ithTableRowDetail let-row let-close="close">
+    <dl class="detail">
+      <dt>Email</dt><dd>{{ row.email }}</dd>
+    </dl>
+    <button type="button" (click)="close()">Close</button>
+  </ng-template>
+</ith-table>
+```
+
+- `rowDetailTrigger="button"` adds a chevron cell (rotates when open); `"row"` expands on row
+  click; `"none"` disables expansion.
+- The panel renders on its own full-width row under the row, and the template receives
+  `{ $implicit, row, index, close }`.
+
+### CSV and Excel export
+
+```html
+<ith-table [data]="rows" [columns]="columns" [showExport]="true"
+           exportFileName="orders"
+           (csvExport)="onCsv($event)"
+           (exportFile)="onFile($event)"></ith-table>
+```
+
+`showExport` renders one toolbar button that opens a two-item menu:
+
+| Item | Method | Result |
+| --- | --- | --- |
+| **Excel** | `downloadExcel()` / `toExcel()` | `.xlsx` workbook: bold frozen header row, autofilter, sized columns |
+| **CSV** | `downloadCsv()` / `toCsv()` | `.csv`, UTF-8 with BOM so Excel keeps the encoding |
+
+- Both paths write the visible columns in the user's order and the formatted cell text, and
+  use the selected rows when there is a selection — otherwise every filtered row (not just the
+  current page).
+- `toCsv()` returns the text, `toExcel()` returns a `Blob`; `exportAs('csv' | 'xlsx')` runs the
+  same logic as the menu. `(csvExport)` emits the CSV string, `(exportFile)` emits
+  `{ format, fileName, blob, rows }` for both formats (upload it to your API instead of saving).
+- The `.xlsx` writer (`buildXlsxBlob()` from the package) is a small ZIP + OOXML writer with no
+  runtime dependency; it is exported separately in case you want to reuse it.
+- CSV values containing `,` `;` `"` or a newline are quoted and escaped.
+- Excel cells are written as text, so leading zeros in codes such as `260029` survive.
+
+### Footer totals
+
+```typescript
+columns: TableColumn<Order>[] = [
+  { key: 'customer', header: 'Customer' },
+  { key: 'total', header: 'Total', align: 'right', aggregate: 'sum' },
+  { key: 'qty', header: 'Qty', aggregate: { type: 'avg', label: 'Average' } },
+  { key: 'id', header: '#', aggregate: 'count' },
+];
+```
+
+`sum`, `avg`, `min`, `max` and `count` are computed over the filtered rows (the loaded page in
+server mode) and rendered in a `<tfoot>` row that keeps the column alignment, sticky columns
+and the density. `aggregate.label` renames the caption and `aggregate.format(value)` controls
+the number formatting.
+
+### Keyboard grid
+
+`keyboardNavigation` (default `true`) gives the body a single tab stop and grid navigation:
+
+| Key | Action |
+| --- | --- |
+| `↑` `↓` `←` `→` | Move one cell |
+| `Home` / `End` | First / last cell of the row |
+| `Ctrl+Home` / `Ctrl+End` | First cell / last cell of the page |
+| `PageUp` / `PageDown` | Move one page of rows |
+| `Space` | Toggle selection of the row |
+| `Ctrl/Cmd+C` | Copy the focused cell (with `copyable`) |
+| `Shift+F10` / context-menu key | Emit `rowContextMenu` |
 
 ### Sticky columns and tooltips
 
@@ -571,6 +711,17 @@ Notes:
 | `selectRow(row)` / `deselectRow(row)` / `clearSelection()` | Selection helpers |
 | `isSelected(row)` / `rowKey(row)` | Selection inspection |
 | `clearSearch()` / `clearFilters()` / `clearQuery()` | Reset search state |
+| `setColumnVisible(key, visible)` / `canHide(key)` | Column visibility |
+| `resetColumns()` | Restore the default layout |
+| `pinColumn(key, 'start' \| 'end' \| null)` | Runtime pinning |
+| `autosizeColumn(key)` | Fit a column to its content |
+| `moveColumn(from, to)` | Reorder two columns |
+| `setDensity(density)` / `toggleDensity()` | Comfortable vs compact rows |
+| `toggleRowDetail(row)` / `isRowExpanded(row)` | Row detail panel |
+| `toCsv()` / `toExcel()` | CSV text / `.xlsx` blob |
+| `downloadCsv()` / `downloadExcel()` / `exportAs(format)` | Downloads |
+| `saveView()` / `applyView(name)` / `deleteView(name, event)` | Named layouts |
+| `toggleColumnPicker()` / `toggleViews()` | Open the toolbar popovers |
 
 Expose `sort`, `search`, `page`, `pageSize`, `selected` and `filters` publicly to reset
 them from the parent.
@@ -609,7 +760,7 @@ Component styles are scoped; do not set `encapsulation: ViewEncapsulation.None` 
 consumer and avoid `display: none` on the host. The table needs its host `display: block`.
 
 **Angular budget warning for component styles**
-The table stylesheet is ~15 kB uncompressed (~3 kB gzipped). If your Angular project uses
+The table stylesheet is ~36 kB uncompressed (~6 kB gzipped). If your Angular project uses
 the default `anyComponentStyle` budget (8 kB), raise it:
 
 ```json
@@ -685,8 +836,19 @@ Rows are compared by `keyField`; pass the same row objects (or at least the same
 | `showDensityToggle` | `boolean` | `false` |
 | `storageKey` | `string` | `''` |
 | `skeletonRows` | `number` | `6` |
+| `minRows` | `number` | `4` |
 | `stickySelection` | `boolean` | `false` |
 | `stickyActions` | `boolean` | `false` |
+| `showFilterChips` | `boolean` | `true` |
+| `selectionActions` | `TableSelectionAction<T>[]` | `[]` |
+| `showColumnMenu` | `boolean` | `true` |
+| `showExport` | `boolean` | `false` |
+| `exportFileName` | `string` | `'table'` |
+| `showViews` | `boolean` | `false` |
+| `resizable` | `boolean` | `false` |
+| `reorderable` | `boolean` | `false` |
+| `keyboardNavigation` | `boolean` | `true` |
+| `rowDetailTrigger` | `'button' \| 'row' \| 'none'` | `'button'` |
 
 ### Outputs
 
@@ -705,6 +867,10 @@ Rows are compared by `keyField`; pass the same row objects (or at least the same
 | `rowContextMenu` | `TableRowMenuEvent<T>` (`{ row, index, x, y, event }`) |
 | `columnsChange` | `string[]` (visible column keys) |
 | `densityChange` | `'comfortable' \| 'compact'` |
+| `columnStateChange` | `TablePresetState` (`{ hidden, density, order, widths, pinned }`) |
+| `selectionAction` | `TableSelectionActionEvent<T>` (`{ action, rows }`) |
+| `csvExport` | `string` (the generated CSV) |
+| `exportFile` | `TableExportEvent<T>` (`{ format, fileName, blob, rows }`) |
 
 ## License
 

@@ -2,9 +2,10 @@
   <h2 class="mb-3">Data Table — client side</h2>
   <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
     <p class="text-muted small mb-0">
-      Click a header to sort, use the search box, tick rows (or the header checkbox) to select,
-      and use the row actions. Every column gets a filter control (text, number or select) and
-      the filter row itself can be turned off above.
+      Sort from a header, open the header <strong>⋮</strong> menu to pin / fit / hide, drag a
+      header to reorder and its edge to resize, expand a row with the chevron. Arrow keys move
+      between cells, Space selects, the Views menu saves a layout, Export downloads the current
+      view as CSV and the footer totals average the Roll column.
     </p>
     <label class="form-check-label small">
       <input
@@ -31,6 +32,12 @@
     [copyable]="true"
     [showColumnPicker]="true"
     [showDensityToggle]="true"
+    [showExport]="true"
+    [showViews]="true"
+    exportFileName="students"
+    [resizable]="true"
+    [reorderable]="true"
+    [selectionActions]="studentSelectionActions"
     storageKey="ith-table-students"
     [stickySelection]="true"
     [stickyActions]="true"
@@ -38,7 +45,19 @@
     (pageSizeChange)="onPageSizeChange($event)"
     (rowClick)="onStudentClick($event)"
     (actionClick)="onStudentAction($event)"
+    (selectionAction)="onSelectionAction($event)"
     (cellCopy)="onCellCopy($event)">
+    <ng-template ithTableRowDetail let-row>
+      <div class="demo-detail">
+        <div><span>Student ID</span><strong>{{ row.studentId }}</strong></div>
+        <div><span>Roll</span><strong>{{ row.roll }}</strong></div>
+        <div><span>Father</span><strong>{{ row.fatherName }}</strong></div>
+        <div><span>Mother</span><strong>{{ row.motherName }}</strong></div>
+        <div><span>Guardian mobile</span><strong>{{ row.guardianMobile }}</strong></div>
+        <div><span>Religion</span><strong>{{ row.religion }}</strong></div>
+      </div>
+    </ng-template>
+
     <ng-template ithTableCell="status" let-value="value">
       <span class="demo-status" [class.demo-status-active]="value === 'Active'">{{ value }}</span>
     </ng-template>

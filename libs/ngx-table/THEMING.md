@@ -149,6 +149,8 @@ them individually to opt out of the derivation.
 | `--ith-table-cell-padding` | `12px 16px` | Body cell padding |
 | `--ith-table-font-size` | `14px` | Body font size |
 | `--ith-table-header-font-size` | `13px` | Header font size |
+| `--ith-table-row-height` | `46px` | Row height used for sticky offsets and the `minRows` floor |
+| `--ith-table-head-height` | `45px` | Header height used for the `minRows` floor |
 
 ## Ready-made themes
 

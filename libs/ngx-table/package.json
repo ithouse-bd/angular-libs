@@ -1,6 +1,6 @@
 {
   "name": "@ithouse-bd/ngx-table",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Generic, fully themeable Angular data table: sorting, searching, per-column filters, pagination, row selection, row actions, custom cell/header/footer templates and a server-side mode.",
   "keywords": [
     "angular",

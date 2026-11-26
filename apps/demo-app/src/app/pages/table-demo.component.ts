@@ -8,8 +8,11 @@ import {
   TableFilterDirective,
   TableRowAction,
   TableRowActionsDirective,
+  TableRowDetailDirective,
   TableRowEvent,
   TableRowMenuDirective,
+  TableSelectionAction,
+  TableSelectionActionEvent,
   TableSort,
 } from '@ithouse-bd/ngx-table';
 
@@ -94,6 +97,7 @@ const ALL_USERS: ServerUser[] = Array.from({ length: 47 }, (_, index) => {
     TableCellDirective,
     TableFilterDirective,
     TableRowActionsDirective,
+    TableRowDetailDirective,
     TableRowMenuDirective,
   ],
   templateUrl: './table-demo.component.html',
@@ -106,8 +110,21 @@ export class TableDemoComponent implements OnInit {
 
   readonly studentColumns: TableColumn<Student>[] = [
     { key: 'sl', header: 'SL', width: '64px', align: 'center' },
-    { key: 'studentId', header: 'Student ID', width: '120px', filterPlaceholder: 'ID…' },
-    { key: 'roll', header: 'Roll', width: '72px', align: 'center', filterType: 'number' },
+    {
+      key: 'studentId',
+      header: 'Student ID',
+      width: '120px',
+      filterPlaceholder: 'ID…',
+      aggregate: 'count',
+    },
+    {
+      key: 'roll',
+      header: 'Roll',
+      width: '72px',
+      align: 'center',
+      filterType: 'number',
+      aggregate: { type: 'avg', label: 'Avg' },
+    },
     { key: 'name', header: 'Name', minWidth: '190px' },
     {
       key: 'gender',
@@ -144,6 +161,11 @@ export class TableDemoComponent implements OnInit {
 
   readonly studentActions: TableRowAction<Student>[] = [
     { id: 'view', label: 'View' },
+    { id: 'delete', label: 'Delete', class: 'is-danger' },
+  ];
+
+  readonly studentSelectionActions: TableSelectionAction<Student>[] = [
+    { id: 'export', label: 'Export selected' },
     { id: 'delete', label: 'Delete', class: 'is-danger' },
   ];
 
@@ -198,6 +220,10 @@ export class TableDemoComponent implements OnInit {
 
   onStudentAction(event: TableActionEvent<Student>): void {
     this.lastAction = `${event.action.label}: ${event.row.name} (row ${event.index + 1})`;
+  }
+
+  onSelectionAction(event: TableSelectionActionEvent<Student>): void {
+    this.lastAction = `${event.action.label}: ${event.rows.length} row(s)`;
   }
 
   onUserAction(user: ServerUser): void {
